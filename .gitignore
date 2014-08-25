@@ -1,0 +1,18 @@
+# IDE
+.idea
+.eclipse
+.project
+
+# Compass
+**.sass-cache
+**.css
+
+# Build
+.tmp
+lib
+
+# Bower
+bower
+
+# NPM
+node_modules
