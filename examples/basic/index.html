@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head lang='en'>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Debugger</title>
+    <meta name='description' content='AppsGate Debugger example'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <!-- build:css(.tmp) themes/basic/theme.css -->
+    <link rel='stylesheet' href='themes/basic/theme.css'>
+    <!-- endbuild -->
+    <script type='text/javascript' src='components/requirejs/require.js'></script>
+    <script type='text/javascript'>
+        require.config({
+            baseUrl: '/',
+            map: {
+                '*': {
+                    'underscore': 'lodash'
+                }
+            },
+            shim: {
+                'lodash': {
+                    exports: '_'
+                },
+                'backbone': {
+                    deps: ['jquery', 'underscore'],
+                    exports: 'Backbone'
+                },
+                'jquery': {
+                    exports: '$'
+                },
+                'appsgate.debugger': {
+                    deps: ['jquery', 'jqueryui', 'backbone', 'lodash', 'd3']
+                }
+            },
+            paths: {
+                'appsgate.debugger': 'appsgate.debugger.dev',
+                'backbone': 'components/backbone/backbone',
+                'lodash': 'components/lodash/dist/lodash',
+                'jquery': 'components/jquery/dist/jquery',
+                'jqueryui': 'components/jqueryui/jquery-ui',
+                'd3': 'components/d3/d3'
+            }
+        });
+
+        require(['appsgate.debugger'], function(Debugger) {
+            var connector = new Debugger.Connector({
+                address: 'localhost',
+                port: '3000'
+            });
+
+            var dashboard = new Debugger.Dashboard('#canvas');
+            dashboard.connect(connector);
+
+            var monitor = new Debugger.Monitor();
+            monitor.connect(connector);
+        });
+    </script>
+    <style type="text/css">
+        body > .wrapper {
+            width: 960px;
+            height: 100%;;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div id='canvas'></div>
+    </div>
+</body>
+</html>
