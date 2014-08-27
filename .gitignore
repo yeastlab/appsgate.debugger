@@ -5,11 +5,9 @@
 
 # Compass
 **.sass-cache
-**.css
 
 # Build
 .tmp
-lib
 
 # Bower
 bower
