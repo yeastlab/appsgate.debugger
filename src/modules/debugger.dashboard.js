@@ -138,8 +138,13 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         this._$ruler.draggable({
             axis: 'x',
             containment: 'parent',
+            start: function(event, ui) {
+                this.lastPosition = ui.position;
+            },
             drag: function (event, ui) {
-                self._notifyWidgetsOnRulerFocusChanged(ui.position);
+                var direction = (this.lastPosition.left > ui.position.left) ? 'left' : 'right';
+                self._notifyWidgetsOnRulerFocusChanged(ui.position, direction);
+                this.lastPosition = ui.position;
             }
         });
     },
@@ -187,14 +192,15 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
      * Notify widgets that the ruler is at some `position`.
      *
      * @param position Position of the ruler.
+     * @param direction Direction of the ruler, can be 'left' or 'right'
      * @private
      */
-    _notifyWidgetsOnRulerFocusChanged: function(position) {
+    _notifyWidgetsOnRulerFocusChanged: function(position, direction) {
         // offset = parent.offset.left - ruler.width/2
         var offset = this.$el.offset().left - this.options.ruler.width / 2;
         // invoke rulerFocusChanged on all devices & programs
-        _.invoke(this._devices, 'rulerFocusChanged', position.left - offset);
-        _.invoke(this._programs, 'rulerFocusChanged', position.left - offset);
+        _.invoke(this._devices, 'rulerFocusChanged', position.left - offset, direction || 'left');
+        _.invoke(this._programs, 'rulerFocusChanged', position.left - offset, direction || 'left');
     },
 
     /**

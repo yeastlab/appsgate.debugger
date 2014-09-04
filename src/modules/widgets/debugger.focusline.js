@@ -11,8 +11,7 @@ Widgets.Focusline = Widgets.Widget.extend({
     onInitD3: function () {
         this.y = d3.scale.linear()
             .range([0, this.computed('svg.height')-1]);
-
-        this.chart = this.svg.selectAll('rect');
+        this.chart = this.svg.append('g').attr({class: 'focusline'}).selectAll('rect');
     },
 
     onFrameUpdate: function () {
@@ -41,8 +40,7 @@ Widgets.Focusline = Widgets.Widget.extend({
             'width': this.computed('svg.width') / self.buffer.size(),
             'height': function (d) {
                 return self.y(d.data.value)
-            },
-            'fill': 'blue'
+            }
         });
         chart.attr({
             'x': function (d, i) {

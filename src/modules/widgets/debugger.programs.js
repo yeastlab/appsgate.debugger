@@ -21,7 +21,7 @@ Widgets.Program = Widgets.Widget.extend({
 
     onInitD3: function () {
         // state is used to display the program's state
-        this.state = this.svg.append('g').attr({class: 'state'}).selectAll('rect');
+        this.state = this.svg.append('g').attr({class: 'program state'}).selectAll('rect');
 
         // markers is used to display decoration markers
         this.initD3Markers();
@@ -55,15 +55,7 @@ Widgets.Program = Widgets.Widget.extend({
             height: function (d) {
                 return 0.5*self.computed('svg.height');
             },
-            fill: function (d) {
-                if (d.data.event.state.name === 'disabled') {
-                    return 'orange';
-                } else if (d.data.event.state.name == 'enabled') {
-                    return 'yellow';
-                } else if (d.data.event.state.name == 'invalid') {
-                    return 'grey';
-                }
-            }
+            class: function (d) { return d.data.event.state.name; }
         });
         state.attr({
             x: function (d) {
@@ -78,15 +70,7 @@ Widgets.Program = Widgets.Widget.extend({
             height: function (d) {
                 return 0.5*self.computed('svg.height');
             },
-            fill: function (d) {
-                if (d.data.event.state.name === 'disabled') {
-                    return 'orange';
-                } else if (d.data.event.state.name == 'enabled') {
-                    return 'yellow';
-                } else if (d.data.event.state.name == 'invalid') {
-                    return 'grey';
-                }
-            },
+            class: function (d) { return d.data.event.state.name; },
             rx: 5,
             ry: 5
         });
@@ -98,23 +82,23 @@ Widgets.Program = Widgets.Widget.extend({
         this.updateD3Markers();
     },
 
-    onRulerFocusUpdate: function (position, timestamp, frame) {
-        // update `aside` position
-        if (position < this.computed('svg.width') / 2) {
-            this._$aside.css({
-                'left': position + this.options.placeholder.sidebar.width + this.options.ruler.width / 2,
-                'right': 'auto'
-            });
-        } else {
-            this._$aside.css({
-                'left': 'auto',
-                'right': this.computed('svg.width') + this.options.ruler.width / 2 - position
-            });
+    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
+        // update name
+        if (ensure(focusedFrame, 'data.name')) {
+            this._$name.text(focusedFrame.data.name);
         }
 
-        if (frame && frame.data) {
-            this._$name.text(frame.data.name);
-        }
+        // update focus
+        var state = this.state.data(
+            _.compact([focusedFrame, lastFocusedFrame]),
+            function (d) {
+                return d.timestamp
+            }
+        );
+
+        state.classed('focused', function(d) {
+            return d == focusedFrame
+        });
     }
 });
 

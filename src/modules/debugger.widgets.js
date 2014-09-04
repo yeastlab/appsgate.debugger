@@ -203,22 +203,46 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
         }
     },
 
-    rulerFocusChanged: function (position) {
-        var timestamp = this.timescale.invert(parseInt(position)).getTime();
-        var frame = this.buffer.at(timestamp);
+    rulerFocusChanged: function (position, direction, options) {
+        // set default options
+        options = _.defaults({}, options, {
+            delta: 2    // 2px left and 2px right
+        });
+
+        // keep track of last focused frame
+        this._lastFocusedFrame = this._focusedFrame;
+
+        // get exact matching timestamp
+        var exactTimestamp = this.timescale.invert(parseInt(position)).getTime();
+
+        // get new focused frame
+        this._focusedFrame = this._findFocusedFrame(position, direction, exactTimestamp, options.delta);
 
         // trigger onBeforeRulerFocusUpdate
-        this.triggerMethod.apply(this, ['before:ruler:focus:update', position, timestamp, frame]);
+        this.triggerMethod.apply(this, ['before:ruler:focus:update', position, exactTimestamp, this._focusedFrame, this._lastFocusedFrame]);
 
         // hide widget if it does not have any state (meaning it disappeared)
-        if (missing(frame, 'data.event.state')) {
+        if (missing(this._focusedFrame, 'data.event.state')) {
             this.$el.css('opacity', 0.1);
         } else {
             this.$el.css('opacity', 1);
         }
 
         // trigger onRulerFocusUpdate
-        this.triggerMethod.apply(this, ['ruler:focus:update', position, timestamp, frame]);
+        this.triggerMethod.apply(this, ['ruler:focus:update', position, exactTimestamp, this._focusedFrame, this._lastFocusedFrame]);
+    },
+
+    _findFocusedFrame: function(position, direction, exactTimestamp, delta) {
+        // workout timestamp interval
+        var minTimestamp = this.timescale.invert(parseInt(position-delta)).getTime();
+        var maxTimestamp = this.timescale.invert(parseInt(position+delta)).getTime();
+
+        var focusedFrame = this.buffer.inside(
+            [direction == 'left' ? minTimestamp : exactTimestamp, direction == 'right' ? maxTimestamp : exactTimestamp],
+            direction
+        );
+
+        return focusedFrame;
     },
 
     /**
@@ -303,9 +327,9 @@ Widgets.Mixins = {
                 })
                 .y(function (d) {
                     if (ensure(d, 'data.event.type', 'update')) {
-                        return self.computed('svg.height') - self.y(self.valueFn(d.data));
+                        return self.computed('svg.height') - self.y(self.valueFn(d.data)) - 1;
                     } else {
-                        return self.computed('svg.height') + 1;
+                        return self.computed('svg.height') + 2;
                     }
                 })
                 .interpolate("step-after");
@@ -322,18 +346,33 @@ Widgets.Mixins = {
                 x1: self.timescale(self.dateFn(last.timestamp)),
                 y1: function () {
                     if (ensure(last, 'data.event.type', 'update')) {
-                        return self.computed('svg.height') - self.y(self.valueFn(last.data));
+                        return self.computed('svg.height') - self.y(self.valueFn(last.data)) - 1;
                     } else {
-                        return self.computed('svg.height') + 1;
+                        return self.computed('svg.height') + 2;
                     }
                 },
                 x2: self.timescale(self.dateFn(last.next.timestamp)),
                 y2: function () {
                     if (ensure(last, 'data.event.type', 'update')) {
-                        return self.computed('svg.height') - self.y(self.valueFn(last.data));
+                        return self.computed('svg.height') - self.y(self.valueFn(last.data)) - 1;
                     } else {
-                        return self.computed('svg.height') + 1;
+                        return self.computed('svg.height') + 2;
                     }
+                }
+            });
+        },
+
+        updateD3ChartFocus: function(focused, unfocused) {
+            var chart = this.chart.data(
+                _.compact([focused, unfocused]),
+                function (d) {
+                    return d.timestamp
+                }
+            );
+
+            chart.attr({
+                class: function(d) {
+                    return d == focused ? 'focused' : ''
                 }
             });
         }
@@ -384,6 +423,21 @@ Widgets.Mixins = {
                 }
             });
             markers.exit().remove()
+        }
+    },
+    Aside: {
+        updateAsidePosition: function(position) {
+            if (position < this.computed('svg.width') / 2) {
+                this._$aside.css({
+                    'left': position + this.options.placeholder.sidebar.width + this.options.ruler.width / 2,
+                    'right': 'auto'
+                });
+            } else {
+                this._$aside.css({
+                    'left': 'auto',
+                    'right': this.computed('svg.width') + this.options.ruler.width / 2 - position
+                });
+            }
         }
     }
 };

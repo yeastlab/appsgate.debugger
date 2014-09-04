@@ -242,14 +242,45 @@ Debugger.SmartBuffer = (function () {
 
         /**
          * Return frame from buffered data that match a given `timestamp`.
+         *
          * @param timestamp Timestamp used to find the frame.
          * @returns {Object} the frame matching the timestamp or null if no match found.
          */
         at: function (timestamp) {
-            // here we return the last frame that starts before `timestamp`.
-            return _.findLast(this.data, function (frame) {
-                return frame.timestamp <= timestamp;
-            });
+            if (this.options.pairing) {
+                return _.findLast(this.data, function (frame) {
+                    return frame.timestamp <= timestamp && timestamp <= frame.next.timestamp;
+                });
+            } else {
+                return _.findLast(this.data, function (frame) {
+                    return frame.timestamp == timestamp;
+                });
+            }
+        },
+
+        /**
+         * Return frame inside a timestamp `range`, if multiple frames match then the one
+         * closest to the boundary on the `direction` side will be returned.
+         *
+         * @param range Timestamp range
+         * @param direction Lookup direction
+         * @returns {*} the frame matching the timestamp `range` or null if no match found.
+         */
+        inside: function (range, direction) {
+            // the lookup function depends on the lookup direction
+            var lookup = direction == 'left' ? _.find : _.findLast;
+
+            if (this.options.pairing) {
+                return lookup.call(this, this.data, function (frame) {
+                    return (range[0] <= frame.timestamp && frame.timestamp <= range[1])
+                        || (range[0] <= frame.next.timestamp && frame.next.timestamp <= range[1])
+                        || (frame.timestamp <= range[0] && range[1] <= frame.next.timestamp);
+                });
+            } else {
+                return lookup.call(this, this.data, function (frame) {
+                    return range[0] <= frame.timestamp && frame.timestamp <= range[1];
+                });
+            }
         },
 
         size: function () {

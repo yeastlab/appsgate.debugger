@@ -8,9 +8,30 @@
 // Variables definition
 //
 
-$diagram_border_color: rgba(7, 157, 24,1);
-$diagram_border_width:  1px;
-$diagram_fill_color:    rgba(244, 250, 88, 1);
+$font_color:  rgba(76, 76, 76, 1);
+
+$device_state_border_width: 2px;
+$device_state_border_color: rgba(154, 207, 7, 0.8);
+$device_state_border_focused_color: rgba(154, 207, 7, 1);
+$device_state_fill_color: rgba(154, 207, 7, 0.2);
+$device_state_fill_focused_color: rgba(154, 207, 7, 0.5);
+
+$program_state_disabled_color: rgba(207, 60, 0, 0.3);
+$program_state_disabled_focused_color: rgba(207, 60, 0, 0.6);
+$program_state_enabled_color: rgba(154, 207, 7, 0.3);
+$program_state_enabled_focused_color: rgba(154, 207, 7, 0.6);
+$program_state_invalid_color: rgba(105, 105, 105, 0.3);
+$program_state_invalid_focused_color: rgba(105, 105, 105, 0.6);
+
+$status_border_width: 2px;
+$status_connection_border_color: rgba(154, 207, 7, 0.8);
+$status_connection_border_focused_color: rgba(154, 207, 7, 1);
+$status_problem_border_color: rgba(206, 96, 39, 0.80);
+$status_problem_border_focused_color: rgba(206, 96, 39, 1);
+$status_disconnection_border_color: rgba(206, 66, 66, 0.80);
+$status_disconnection_border_focused_color: rgba(206, 66, 66, 1);
+
+$focusline_color: rgba(105, 105, 105, 0.5);
 
 //
 // Layout definition
@@ -26,6 +47,7 @@ html, body {
     overflow: auto;
     overflow-x: hidden;
     overflow-y: auto;
+    color: $font_color;
 
     .rule {
         z-index: 1000;
@@ -135,13 +157,67 @@ html, body {
 }
 
 .area {
-    fill: $diagram_fill_color;
+    fill: $device_state_fill_color;
     stroke-width: 0;
+
+    .focused {
+        fill: $device_state_fill_focused_color;
+    }
+}
+
+.program {
+    .disabled {
+        fill: $program_state_disabled_color;
+    }
+    .disabled.focused {
+        fill: $program_state_disabled_focused_color;
+    }
+    .enabled {
+        fill: $program_state_enabled_color;
+    }
+    .enabled.focused {
+        fill: $program_state_enabled_focused_color;
+    }
+    .invalid {
+        fill: $program_state_invalid_color;
+    }
+    .invalid.focused {
+        fill: $program_state_invalid_focused_color;
+    }
+}
+
+.status {
+    line {
+        stroke-width: $status_border_width;
+    }
+
+    .connection {
+        stroke: $status_connection_border_color;
+    }
+    .connection.focused {
+        stroke: $status_connection_border_focused_color;
+    }
+    .problem {
+        stroke: $status_problem_border_color;
+    }
+    .problem.focused {
+        stroke: $status_problem_border_focused_color;
+    }
+    .disconnection {
+        stroke: $status_disconnection_border_color;
+    }
+    .disconnection.focused {
+        stroke: $status_disconnection_border_focused_color;
+    }
+}
+
+.focusline rect {
+    fill: $focusline_color;
 }
 
 .border {
-    stroke: $diagram_border_color;
-    stroke-width: $diagram_border_width;
+    stroke: $device_state_border_color;
+    stroke-width: $device_state_border_width;
     shape-rendering: crispEdges;
     fill: transparent;
 }
@@ -151,9 +227,16 @@ html, body {
     stroke-dasharray: 1, 2;
 }
 
-.spikes line {
-    stroke: $diagram_border_color;
-    stroke-width: $diagram_border_width;
+.spikes {
+    line {
+        stroke-width: $device_state_border_width;
+        stroke: $device_state_border_color;
+    }
+
+    .focused {
+        stroke-width: $device_state_border_width * 1.5;
+        stroke: $device_state_border_focused_color;
+    }
 }
 
 .decoration {

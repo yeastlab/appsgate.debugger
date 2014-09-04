@@ -43,7 +43,7 @@ Widgets.Temperature = Widgets.Device.extend({
         Widgets.Device.prototype.onInitD3.apply(this, arguments);
 
         this.y = d3.scale.linear()
-            .range([1, this.computed('svg.height')-1]);
+            .range([0, this.computed('svg.height') - 1]);
 
         this.initD3Chart();
     },
@@ -63,19 +63,17 @@ Widgets.Temperature = Widgets.Device.extend({
         this.updateD3Chart();
     },
 
-    onRulerFocusUpdate: function (position, timestamp, frame) {
+    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
-        if (frame && frame.data) {
-            if (frame.data.event.type == 'update' && frame.data.event.state.status == 2) {
-                this._$picto.attr({class: 'picto'}).text(this.valueFn(frame.data)+'°');
-            } else {
-                // fallback
-                this._$picto.attr({class: 'picto picto-temperature_type'}).text('');
-            }
+        if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {
+            this._$picto.attr({class: 'picto'}).text(this.valueFn(focusedFrame.data)+'°');
         } else {
-            this._$aside.text('');
+            // fallback
+            this._$picto.attr({class: 'picto picto-temperature_type'}).text('');
         }
+
+        this.updateD3ChartFocus(focusedFrame, lastFocusedFrame);
     }
 });
 

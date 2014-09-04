@@ -15,11 +15,11 @@ Widgets.Switch = Widgets.Device.extend({
         Widgets.Device.prototype.onInitD3.apply(this, arguments);
 
         this.y = d3.scale.quantize()
-            .range([0, this.computed('svg.height')])
+            .range([0, this.computed('svg.height') - 1])
             .domain([false, true]);
 
         this.spikes = this.svg.append('g').attr({class: 'spikes'}).selectAll('line');
-        this.border = this.svg.insert('path', '.markers').attr({class: 'border'});
+        this.border = this.svg.insert('path', /* insert before */ '.markers').attr({class: 'border'});
         this.border_extra = this.svg.insert('line', /* insert before */ '.markers').attr({class: 'border pending'});
     },
 
@@ -70,9 +70,9 @@ Widgets.Switch = Widgets.Device.extend({
             })
             .y(function (d) {
                 if (ensure(d, 'data.event.type', 'update')) {
-                    return self.computed('svg.height');
+                    return self.computed('svg.height') - 1;
                 } else {
-                    return self.computed('svg.height') + 1;
+                    return self.computed('svg.height') + 2;
                 }
             })
             .interpolate("step-after");
@@ -85,37 +85,42 @@ Widgets.Switch = Widgets.Device.extend({
             x1: self.timescale(self.dateFn(last.timestamp)),
             y1: function() {
                 if (ensure(last, 'data.event.type', 'update')) {
-                    return self.computed('svg.height');
+                    return self.computed('svg.height') -1 ;
                 } else {
-                    return self.computed('svg.height') + 1;
+                    return self.computed('svg.height') + 2;
                 }
             },
             x2: self.timescale(self.dateFn(last.next.timestamp)),
             y2: function() {
                 if (ensure(last, 'data.event.type', 'update')) {
-                    return self.computed('svg.height');
+                    return self.computed('svg.height') - 1;
                 } else {
-                    return self.computed('svg.height') + 1;
+                    return self.computed('svg.height') + 2;
                 }
             }
         });
     },
 
-    onRulerFocusUpdate: function (position, timestamp, frame) {
+    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
-        var delta = 5;
-
-        if (frame && frame.data) {
-            var range = [this.timescale.invert(parseInt(position-delta)).getTime(), this.timescale.invert(parseInt(position+delta)).getTime()];
-            if (range[0] < frame.timestamp && frame.timestamp < range[1] && ensure(frame, 'data.event.type', 'update') && frame.data.event.picto) {
-                this._$picto.attr({class: 'picto picto-'+frame.data.event.picto});
-            } else {
-                // fallback
-                this._$picto.attr({class: 'picto picto-switch_type'}).text('');
-            }
+        if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {
+            this._$picto.attr({class: 'picto picto-' + focusedFrame.data.event.picto});
         } else {
-            this._$aside.text('');
+            // fallback
+            this._$picto.attr({class: 'picto picto-switch_type'});
         }
+
+        // update focus
+        var spikes = this.spikes.data(
+                _.compact([focusedFrame, lastFocusedFrame]),
+            function (d) {
+                return d.timestamp
+            }
+        );
+
+        spikes.classed('focused', function(d) {
+            return d == focusedFrame
+        });
     }
 });

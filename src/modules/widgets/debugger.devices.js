@@ -52,18 +52,9 @@ Widgets.Device = Widgets.Widget.extend({
                 return self.timescale(self.dateFn(d.next.timestamp));
             },
             y2: this.computed('svg.height') - 1,
-            stroke: function (d) {
-                if (d.data.event.type === 'update' && d.data.event.state.status === 'problem') {
-                    return 'orange';
-                } else if (d.data.event.type == 'connection') {
-                    return 'green';
-                } else if (d.data.event.type == 'disconnection') {
-                    return 'red';
-                }
-            },
-            'stroke-width': 2,
+            class: function (d) { return d.data.event.type },
             'stroke-linecap': 'round',
-            'stroke-dasharray': "1, 5"
+            'stroke-dasharray': '1, 5'
         });
         status.attr({
             x1: function (d) {
@@ -71,7 +62,10 @@ Widgets.Device = Widgets.Widget.extend({
             },
             x2: function (d) {
                 return self.timescale(self.dateFn(d.next.timestamp))
-            }
+            },
+            class: function (d) { return d.data.event.type },
+            'stroke-linecap': 'round',
+            'stroke-dasharray': '1, 5'
         });
         status.exit().remove();
 
@@ -79,23 +73,23 @@ Widgets.Device = Widgets.Widget.extend({
         this.updateD3Markers();
     },
 
-    onRulerFocusUpdate: function (position, timestamp, frame) {
-        // update `aside` position
-        if (position < this.computed('svg.width') / 2) {
-            this._$aside.css({
-                'left': position + this.options.placeholder.sidebar.width + this.options.ruler.width / 2,
-                'right': 'auto'
-            });
-        } else {
-            this._$aside.css({
-                'left': 'auto',
-                'right': this.computed('svg.width') + this.options.ruler.width / 2 - position
-            });
+    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
+        // update name
+        if (ensure(focusedFrame, 'data.name')) {
+            this._$name.text(focusedFrame.data.name);
         }
 
-        if (frame && frame.data) {
-            this._$name.text(frame.data.name);
-        }
+        // update focus
+        var status = this.status.data(
+            _.compact([focusedFrame, lastFocusedFrame]),
+            function (d) {
+                return d.timestamp
+            }
+        );
+
+        status.classed('focused', function(d) {
+            return d == focusedFrame
+        });
     }
 });
 

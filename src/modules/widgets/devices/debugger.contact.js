@@ -35,7 +35,7 @@ Widgets.Contact = Widgets.Device.extend({
         Widgets.Device.prototype.onInitD3.apply(this, arguments);
 
         this.y = d3.scale.ordinal()
-            .range([0, this.computed('svg.height')-1])
+            .range([0, this.computed('svg.height') - 1])
             .domain(['false', 'true']);
 
         this.initD3Chart();
@@ -47,15 +47,17 @@ Widgets.Contact = Widgets.Device.extend({
         this.updateD3Chart();
     },
 
-    onRulerFocusUpdate: function (position, timestamp, frame) {
+    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
-        if (frame && frame.data && frame.data.event.type == 'update') {
-            this._$picto.attr({class: 'picto picto-'+frame.data.event.picto});
+        if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {
+            this._$picto.attr({class: 'picto picto-'+focusedFrame.data.event.picto});
         } else {
             // fallback
-            this._$picto.attr({class: 'picto picto-contact_type'}).text('');
+            this._$picto.attr({class: 'picto picto-contact_type'});
         }
+
+        this.updateD3ChartFocus(focusedFrame, lastFocusedFrame);
     }
 });
 

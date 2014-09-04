@@ -49,15 +49,17 @@ Widgets.ColorLight = Widgets.Device.extend({
         this.updateD3Chart();
     },
 
-    onRulerFocusUpdate: function (position, timestamp, frame) {
+    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
-        if (frame && frame.data && frame.data.event.type == 'update' && frame.data.event.state.status == 2) {
-            this._$picto.attr({class: 'picto picto-' + frame.data.event.picto});
+        if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {
+            this._$picto.attr({class: 'picto picto-' + focusedFrame.data.event.picto});
         } else {
             // fallback
-            this._$picto.attr({class: 'picto picto-colorlight_type'}).text('');
+            this._$picto.attr({class: 'picto picto-colorlight_type'});
         }
+
+        this.updateD3ChartFocus(focusedFrame, lastFocusedFrame);
     }
 });
 

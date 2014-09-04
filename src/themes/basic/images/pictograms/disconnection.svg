@@ -1,1 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="m8.112 1.587c-.163-.205-.459-.239-.664-.077l-1.506 1.195-.736-.929c-.051-.065-.157-.077-.222-.026l-1.435 1.138c-1.219.967-1.559 2.624-.906 3.966l-2.374 1.883c-.307.244-.359.687-.115.995.244.307.687.358.995.115l2.374-1.883c1.158.941 2.85.987 4.068.021l1.435-1.138c.065-.051.077-.157.026-.222l-.736-.928 1.506-1.195c.205-.163.239-.459.077-.664-.163-.205-.459-.239-.664-.077l-1.506 1.195-1.198-1.511 1.506-1.195c.205-.163.239-.459.077-.664" fill="#f00"/></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 15.1.0, SVG Export Plug-In  -->
+
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   x="0px"
+   y="0px"
+   width="10"
+   height="10"
+   viewBox="0 0 10 10"
+   overflow="visible"
+   xml:space="preserve"
+   id="svg2"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="priserouge.svg"
+   style="overflow:visible"><sodipodi:namedview
+     bordercolor="#666666"
+     borderopacity="1"
+     gridtolerance="10"
+     guidetolerance="10"
+     id="namedview16"
+     inkscape:current-layer="svg2"
+     inkscape:zoom="3.6875"
+     inkscape:cx="0.13559322"
+     inkscape:cy="32"
+     inkscape:window-width="958"
+     inkscape:window-height="1036"
+     inkscape:window-x="0"
+     inkscape:window-y="19"
+     inkscape:window-maximized="0" /><defs
+     id="defs4" /><g
+     id="g3770"
+     transform="matrix(0.15993834,0,0,0.15993834,1.1968485,5.8706335e-5)"><g
+       id="g3763"><path
+         d="m 27.57,27.041 c 0.491,-0.699 0.329,-1.663 -0.367,-2.153 l -0.23,-0.161 c -0.691,-0.491 -1.658,-0.321 -2.148,0.38 L 0.284,59.929 c -0.492,0.7 -0.33,1.665 0.367,2.154 l 0.228,0.162 c 0.695,0.489 1.658,0.318 2.151,-0.383 L 27.57,27.041 z"
+         id="path6"
+         style="fill:#ce4242;stroke-width:0.60000002;stroke-miterlimit:4;stroke-dasharray:none"
+         inkscape:connector-curvature="0" /><path
+         d="M 27.598,15.194 35.263,4.316 C 36.238,2.929 36.234,1.231 35.236,0.53 L 34.9,0.306 C 33.914,-0.402 32.307,0.16 31.33,1.55 l -7.497,10.639"
+         id="path8"
+         inkscape:connector-curvature="0"
+         style="fill:#ce4242" /><path
+         d="M 39.167,23.032 46.831,12.156 C 47.806,10.768 47.802,9.07 46.805,8.368 L 46.471,8.144 C 45.483,7.438 43.877,8 42.9,9.39 l -7.496,10.637"
+         id="path10"
+         inkscape:connector-curvature="0"
+         style="fill:#ce4242" /><path
+         d="M 39.273,16.879 30.011,10.713"
+         id="path12"
+         inkscape:connector-curvature="0"
+         style="fill:#ce4242" /><path
+         d="M 25.378,7.633 21.506,5.055 13.63,16.891 c -3.005,4.516 -1.905,10.713 2.289,14.988 l -1.329,3.892 7.235,4.814 3.314,-2.613 c 5.521,2.122 11.564,0.726 14.541,-3.745 l 7.878,-11.835 -3.655,-2.431"
+         id="path14"
+         inkscape:connector-curvature="0"
+         style="fill:#ce4242" /></g></g></svg>
