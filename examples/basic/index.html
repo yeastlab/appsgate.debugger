@@ -49,10 +49,10 @@
                 port: '3000'
             });
 
-            var dashboard = new Debugger.Dashboard('#canvas');
+            var dashboard = window.dashboard = new Debugger.Dashboard('#canvas');
             dashboard.connect(connector);
 
-            var monitor = new Debugger.Monitor();
+            var monitor = window.monitor = new Debugger.Monitor();
             monitor.connect(connector);
         });
     </script>
