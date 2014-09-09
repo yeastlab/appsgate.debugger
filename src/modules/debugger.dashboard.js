@@ -324,86 +324,50 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     _create_widget: function (what, attributes) {
         var widget = undefined;
 
+        // widget options
+        var options = {
+            width: this.options.width,
+            height: this.options.widget.height,
+            margin: this.options.widget.margin,
+            placeholder: this.options.widget.placeholder,
+            ruler: this.options.ruler
+        };
+
         switch (what) {
             case 'program':
-                widget = new Debugger.Widgets.Program(
-                    {
-                        id: attributes.id
-                    }, {
-                        width: this.options.widget.width,
-                        height: this.options.widget.height,
-                        margin: this.options.widget.margin,
-                        placeholder: this.options.widget.placeholder,
-                        ruler: this.options.ruler
-                    }
-                );
+                widget = new Debugger.Widgets.Program({id: attributes.id}, options);
                 break;
             case 'device':
                 switch (attributes.type) {
                     case 'Temperature':
-                        widget = new Debugger.Widgets.Temperature(
-                            {
-                                id: attributes.id
-                            }, {
-                                width: this.options.widget.width,
-                                height: this.options.widget.height,
-                                margin: this.options.widget.margin,
-                                placeholder: this.options.widget.placeholder,
-                                ruler: this.options.ruler
-                            }
-                        );
+                        widget = new Debugger.Widgets.Temperature({
+                            id: attributes.id,
+                            type: attributes.type
+                        }, options);
                         break;
                     case 'Switch':
-                        widget = new Debugger.Widgets.Switch(
-                            {
-                                id: attributes.id
-                            }, {
-                                width: this.options.widget.width,
-                                height: this.options.widget.height,
-                                margin: this.options.widget.margin,
-                                placeholder: this.options.widget.placeholder,
-                                ruler: this.options.ruler
-                            }
-                        );
+                        widget = new Debugger.Widgets.Switch({
+                                id: attributes.id,
+                                type: attributes.type
+                            }, options);
                         break;
                     case 'Contact':
-                        widget = new Debugger.Widgets.Contact(
-                            {
-                                id: attributes.id
-                            }, {
-                                width: this.options.widget.width,
-                                height: this.options.widget.height,
-                                margin: this.options.widget.margin,
-                                placeholder: this.options.widget.placeholder,
-                                ruler: this.options.ruler
-                            }
-                        );
+                        widget = new Debugger.Widgets.Contact({
+                                id: attributes.id,
+                                type: attributes.type
+                            }, options);
                         break;
                     case 'KeyCardSwitch':
-                        widget = new Debugger.Widgets.KeycardSwitch(
-                            {
-                                id: attributes.id
-                            }, {
-                                width: this.options.widget.width,
-                                height: this.options.widget.height,
-                                margin: this.options.widget.margin,
-                                placeholder: this.options.widget.placeholder,
-                                ruler: this.options.ruler
-                            }
-                        );
+                        widget = new Debugger.Widgets.KeycardSwitch({
+                                id: attributes.id,
+                                type: attributes.type
+                            }, options);
                         break;
                     case 'ColorLight':
-                        widget = new Debugger.Widgets.ColorLight(
-                            {
-                                id: attributes.id
-                            }, {
-                                width: this.options.widget.width,
-                                height: this.options.widget.height,
-                                margin: this.options.widget.margin,
-                                placeholder: this.options.widget.placeholder,
-                                ruler: this.options.ruler
-                            }
-                        );
+                        widget = new Debugger.Widgets.ColorLight({
+                                id: attributes.id,
+                                type: attributes.type
+                            }, options);
                         break;
                 }
                 break;
