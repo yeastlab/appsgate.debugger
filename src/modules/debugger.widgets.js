@@ -108,6 +108,9 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
         this.triggerMethod.apply(this, ['init:UI'].concat(args));
     },
 
+    onBeforeInitUI: function() { /* default implementation: do nothing */ },
+    onInitUI: function() { /* default implementation: do nothing */ },
+
     // jQuery delegate for element lookup, scoped to DOM elements within the
     // current view. This should be preferred to global lookups where possible.
     $: function (selector) {
@@ -145,6 +148,15 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
         // notify that we are initializing d3
         this.triggerMethod.apply(this, ['init:d3'].concat(args));
     },
+
+    onBeforeInitD3: function() { /* default implementation: do nothing */ },
+    onInitD3: function() { /* default implementation: do nothing */ },
+
+    onBeforeDestroyD3: function() { /* default implementation: do nothing */ },
+    onDestroyD3: function() { /* default implementation: do nothing */ },
+
+    onBeforeResetD3: function() { /* default implementation: do nothing */ },
+    onResetD3: function() { /* default implementation: do nothing */ },
 
     /**
      * Return the value of a computed property.
@@ -203,6 +215,9 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
         }
     },
 
+    onBeforeFrameUpdate: function() { /* default implementation: do nothing */ },
+    onFrameUpdate: function() { /* default implementation: do nothing */ },
+
     rulerFocusChanged: function (position, direction, options) {
         // set default options
         options = _.defaults({}, options, {
@@ -231,6 +246,9 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
         // trigger onRulerFocusUpdate
         this.triggerMethod.apply(this, ['ruler:focus:update', position, exactTimestamp, this._focusedFrame, this._lastFocusedFrame]);
     },
+
+    onBeforeRulerFocusUpdate: function() { /* default implementation: do nothing */ },
+    onRulerFocusUpdate: function() { /* default implementation: do nothing */ },
 
     _findFocusedFrame: function(position, direction, exactTimestamp, delta) {
         // workout timestamp interval
