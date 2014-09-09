@@ -7,7 +7,7 @@ var Widgets = Debugger.Widgets = {};
 Widgets.Widget = function (attributes, options) {
     var self = this;
 
-    this.attributes = _.defaults({}, attributes || {}, _.result(this, 'defaults'));
+    this.attributes = defaultsDeep({}, attributes || {}, _.result(this, 'defaults'));
 
     // check if an *id* and a *kind* is given
     _.forEach(['id', 'kind'], function (key) {
@@ -35,10 +35,8 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
     initialize: function (options) {
         var self = this;
 
-        options || (options = {});
-
         // set default options in case some is omitted
-        this.options = _.defaults(options, {
+        this.options = defaultsDeep({}, options, {
             width: 960,
             height: 100,
             margin: {
@@ -188,7 +186,7 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
 
     update: function (data, domain, options) {
         // set default options
-        options = _.defaults({}, options, {
+        options = defaultsDeep({}, options, {
             render: true
         });
 
@@ -218,9 +216,16 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
     onBeforeFrameUpdate: function() { /* default implementation: do nothing */ },
     onFrameUpdate: function() { /* default implementation: do nothing */ },
 
+    /**
+     * Main entry point for notifying widget that the ruler's focus just changed.
+     *
+     * @param position The position of the ruler in pixel
+     * @param direction The direction `left` or `right` in which the ruler was dragged
+     * @param options
+     */
     rulerFocusChanged: function (position, direction, options) {
         // set default options
-        options = _.defaults({}, options, {
+        options = defaultsDeep({}, options, {
             delta: 2    // 2px left and 2px right
         });
 

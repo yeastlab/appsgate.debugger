@@ -27,13 +27,10 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     initialize: function (selector, options) {
         var self = this;
 
-        options || (options = {});
-
         // set default options in case some is omitted
-        this.options = _.defaults(options, {
+        this.options = defaultsDeep({}, options, {
             width: 960,
             widget: {
-                width: 960,
                 height: 50,
                 margin: {
                     top: 10,

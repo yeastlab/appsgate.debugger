@@ -77,6 +77,18 @@ function missing(object, propertyPath) {
 }
 
 /**
+ * Deep version of lodash _.defaults
+ * @type {Function}
+ */
+var defaultsDeep = _.partialRight(_.merge, function recursiveDefaults ( /* ... */ ) {
+    // Ensure dates and arrays are not recursively merged
+    if (_.isArray(arguments[0]) || _.isDate(arguments[0])) {
+        return arguments[0];
+    }
+    return _.merge(arguments[0], arguments[1], recursiveDefaults);
+});
+
+/**
  * Trigger an event and/or a corresponding method name.
  *
  * `this.triggerMethod('foo')` will trigger the 'foo' event and
@@ -126,7 +138,7 @@ Debugger.SmartBuffer = (function () {
 
     var SmartBuffer = function (options) {
         this.data = [];
-        this.options = _.defaults({}, options, {
+        this.options = defaultsDeep({}, options, {
             pairing: false,
             shadowing: false,
             ignoreData: false
