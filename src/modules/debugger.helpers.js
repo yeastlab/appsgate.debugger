@@ -27,6 +27,16 @@ function sluggify(text) {
 }
 
 /**
+ * Parse boolean from a string or a boolean
+ * @param string The value to parse. If string is not a string, then it is converted to one.
+ * Leading whitespace in the string is ignored.
+ * @returns {boolean}
+ */
+function parseBoolean(string) {
+    return /^true$/i.test(string);
+}
+
+/**
  * Ensure that some property is defined and not empty.
  *
  * If a `value` is provided as third arguments then it also check that the value
