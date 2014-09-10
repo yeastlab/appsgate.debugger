@@ -12,13 +12,6 @@ Widgets.Program = Widgets.Widget.extend({
         }
     },
 
-    onInitUI: function () {
-        this._$name = $('<div/>').addClass('title').css({
-            'line-height': this.computed('svg.height') + 'px'
-        });
-        this._$sidebar.append(this._$name);
-    },
-
     onInitD3: function () {
         // state is used to display the program's state
         this.state = this.svg.append('g').attr({class: 'program state'}).selectAll('rect');
@@ -83,12 +76,7 @@ Widgets.Program = Widgets.Widget.extend({
     },
 
     onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
-        // update name
-        if (ensure(focusedFrame, 'data.name')) {
-            this._$name.text(focusedFrame.data.name);
-        }
-
-        // update focus
+        // update state
         var state = this.state.data(
             _.compact([focusedFrame, lastFocusedFrame]),
             function (d) {
@@ -96,7 +84,7 @@ Widgets.Program = Widgets.Widget.extend({
             }
         );
 
-        state.classed('focused', function(d) {
+        state.classed('focused', function (d) {
             return d == focusedFrame
         });
     }

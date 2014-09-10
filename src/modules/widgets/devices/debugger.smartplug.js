@@ -2,10 +2,10 @@
  * Contact widget.
  */
 
-Widgets.KeycardSwitch = Widgets.Device.extend({
+Widgets.SmartPlug = Widgets.Device.extend({
 
     defaults: {
-        kind: 'keycardswitch',
+        kind: 'smartplug',
         buffer: {
             pairing: true,
             shadowing: true
@@ -19,9 +19,9 @@ Widgets.KeycardSwitch = Widgets.Device.extend({
         this.valueFn = function (d) {
             try {
                 if (d.timestamp) {
-                    return parseBoolean(d.data.event.state.state);
+                    return parseBoolean(d.data.event.state.plugState);
                 } else {
-                    return parseBoolean(d.event.state.state);
+                    return parseBoolean(d.event.state.plugState);
                 }
             } catch (e) {
                 return false;
@@ -56,14 +56,14 @@ Widgets.KeycardSwitch = Widgets.Device.extend({
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
         if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {
-            this._$picto.attr({class: 'picto picto-'+focusedFrame.data.event.picto});
+            this._$picto.attr({class: 'picto picto-' + focusedFrame.data.event.picto});
         } else {
             // fallback
-            this._$picto.attr({class: 'picto picto-keycardswitch_type'});
+            this._$picto.attr({class: 'picto picto-smartplug_type'});
         }
 
         this.updateD3ChartFocus(focusedFrame, lastFocusedFrame);
     }
 });
 
-_.extend(Widgets.KeycardSwitch.prototype, Widgets.Mixins.Chart);
+_.extend(Widgets.SmartPlug.prototype, Widgets.Mixins.Chart);

@@ -13,20 +13,18 @@ Widgets.Contact = Widgets.Device.extend({
     },
 
     onBeforeInitD3: function () {
-        if (_.isFunction(Widgets.Device.prototype.onBeforeInitD3)) {
-            Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
-        }
+        Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
 
         // setup d3 functions
         this.valueFn = function (d) {
             try {
                 if (d.timestamp) {
-                    return d.data.event.state.value;
+                    return parseBoolean(d.data.event.state.value);
                 } else {
-                    return d.event.state.value;
+                    return parseBoolean(d.event.state.value);
                 }
             } catch (e) {
-                return 'false';
+                return false;
             }
         };
     },
@@ -36,9 +34,16 @@ Widgets.Contact = Widgets.Device.extend({
 
         this.y = d3.scale.ordinal()
             .range([0, this.computed('svg.height') - 1])
-            .domain(['false', 'true']);
+            .domain([false, true]);
 
         this.initD3Chart();
+    },
+
+    onDestroyD3: function() {
+        Widgets.Device.prototype.onDestroyD3.apply(this, arguments);
+
+        delete this.y;
+        this.destroyD3Chart();
     },
 
     onFrameUpdate: function () {

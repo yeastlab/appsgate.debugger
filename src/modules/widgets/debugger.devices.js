@@ -5,19 +5,18 @@
 Widgets.Device = Widgets.Widget.extend({
 
     onInitUI: function () {
-        this._$name = $('<div/>').addClass('title').css({
-            'line-height': this.computed('svg.height') + 'px'
-        });
         this._$picto = $('<div/>').addClass('picto').css({
             'height': this.computed('svg.height'),
             'line-height': this.computed('svg.height') + 'px',
             'background-size': this.computed('svg.height') + 'px ' + this.computed('svg.height') + 'px',
             'width': this.computed('svg.height')
         });
-        this._$sidebar.append(this._$name, this._$picto);
+        this._$sidebar.append(this._$picto);
     },
 
     onInitD3: function () {
+        Widgets.Widget.prototype.onInitD3.apply(this, arguments);
+
         // status is used to display connection/disconnection status
         this.status = this.svg.append('g').attr({class: 'status'}).selectAll('line');
 
@@ -25,7 +24,19 @@ Widgets.Device = Widgets.Widget.extend({
         this.initD3Markers();
     },
 
+    onDestroyD3: function() {
+        Widgets.Widget.prototype.onDestroyD3.apply(this, arguments);
+
+        // destroy status
+        this.status.remove(); delete this.status;
+
+        // destroy markers
+        this.destroyD3Markers();
+    },
+
     onFrameUpdate: function () {
+        Widgets.Widget.prototype.onFrameUpdate.apply(this, arguments);
+
         var self = this;
 
         //
@@ -74,10 +85,7 @@ Widgets.Device = Widgets.Widget.extend({
     },
 
     onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
-        // update name
-        if (ensure(focusedFrame, 'data.name')) {
-            this._$name.text(focusedFrame.data.name);
-        }
+        Widgets.Widget.prototype.onRulerFocusUpdate.apply(this, arguments);
 
         // update focus
         var status = this.status.data(
@@ -100,4 +108,5 @@ _.extend(Widgets.Device.prototype, Widgets.Mixins.Markers);
 // @include devices/debugger.switch.js
 // @include devices/debugger.contact.js
 // @include devices/debugger.keycardswitch.js
+// @include devices/debugger.smartplug.js
 // @include devices/debugger.colorlight.js

@@ -60,10 +60,10 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
         this.compute('svg.height', 'this.options.height - this.options.margin.top - this.options.margin.bottom');
 
         // init ui
-        this._init_ui();
+        this._initUI();
     },
 
-    _init_ui: function () {
+    _initUI: function () {
         var args = Array.prototype.slice.call(arguments);
 
         // notify that we are going to initialize UI
@@ -92,6 +92,10 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
             'width': this.options.placeholder.sidebar.width,
             'height': this.computed('svg.height')
         });
+        this._$name = $('<div/>').addClass('title').css({
+            'line-height': this.computed('svg.height') + 'px'
+        });
+        this._$sidebar.append(this._$name);
         // d3 placeholder (where we draw)
         this._$d3 = this.$('.placeholder.d3').css({
             'width': this.computed('svg.width'),
@@ -120,10 +124,22 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
      * @param to
      */
     onAttached: function (to) {
-        var args = Array.prototype.slice.call(arguments);
-
         // set ourselves as attached
         this.isAttached = true;
+
+        // initialize D3
+        this._initD3(to);
+    },
+
+    isDetached: function() {
+        return !this.isAttached;
+    },
+
+    /**
+     * Initialize D3
+     */
+    _initD3: function(to) {
+        var args = Array.prototype.slice.call(arguments);
 
         // notify that we are going to initialized d3
         this.triggerMethod.apply(this, ['before:init:d3'].concat(args));
@@ -150,8 +166,59 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
     onBeforeInitD3: function() { /* default implementation: do nothing */ },
     onInitD3: function() { /* default implementation: do nothing */ },
 
+    /**
+     * Handler for detached event.
+     *
+     * @param from
+     */
+    onDetached: function (from) {
+        var args = Array.prototype.slice.call(arguments);
+
+        // set ourselves as detached
+        this.isAttached = false;
+
+        this._destroyD3();
+    },
+
+    /**
+     * Destroy everything about D3.
+     * @private
+     */
+    _destroyD3: function() {
+        var args = Array.prototype.slice.call(arguments);
+
+        // notify that we are going to destroy d3
+        this.triggerMethod.apply(this, ['before:destroy:d3'].concat(args));
+
+        // cleanup SVG
+        this.svg.remove();
+        delete this.svg;
+
+        // cleanup buffer
+        this.buffer.clear();
+
+        // notify that we are destroying d3
+        this.triggerMethod.apply(this, ['destroy:d3'].concat(args));
+    },
+
     onBeforeDestroyD3: function() { /* default implementation: do nothing */ },
     onDestroyD3: function() { /* default implementation: do nothing */ },
+
+    /**
+     * Reset the widget
+     */
+    reset: function() {
+        var args = Array.prototype.slice.call(arguments);
+
+        // notify that we going to reset d3
+        this.triggerMethod.apply(this, ['before:reset:d3'].concat(args));
+
+        this._destroyD3();
+        this._initD3();
+
+        // notify that we are resetting d3
+        this.triggerMethod.apply(this, ['reset:d3'].concat(args));
+    },
 
     onBeforeResetD3: function() { /* default implementation: do nothing */ },
     onResetD3: function() { /* default implementation: do nothing */ },
@@ -241,8 +308,13 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
         // trigger onBeforeRulerFocusUpdate
         this.triggerMethod.apply(this, ['before:ruler:focus:update', position, exactTimestamp, this._focusedFrame, this._lastFocusedFrame]);
 
+        // update name
+        if (ensure(this._focusedFrame, 'data.name')) {
+            this._$name.text(this._focusedFrame.data.name);
+        }
+
         // hide widget if it does not have any state (meaning it disappeared)
-        if (missing(this._focusedFrame, 'data.event.state')) {
+        if (missing(this._focusedFrame, 'data.event.state') && missing(this._focusedFrame, 'data.decorations')) {
             this.$el.css('opacity', 0.1);
         } else {
             this.$el.css('opacity', 1);
@@ -266,23 +338,6 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
         );
 
         return focusedFrame;
-    },
-
-    /**
-     * Handler for detached event.
-     *
-     * @param from
-     */
-    onDetached: function (from) {
-        var args = Array.prototype.slice.call(arguments);
-
-        this.triggerMethod.apply(this, ['before:destroy:d3'].concat(args));
-
-        this.svg.selectAll('*').remove();
-        this.svg.remove();
-        this.svg = null;
-
-        this.triggerMethod.apply(this, ['destroy:d3'].concat(args));
     },
 
     // import the `triggerMethod` to trigger events with corresponding
@@ -365,24 +420,26 @@ Widgets.Mixins = {
 
             // extra border
             var last = this.buffer.last();
-            this.chart_extra.attr({
-                x1: self.timescale(self.dateFn(last.timestamp)),
-                y1: function () {
-                    if (ensure(last, 'data.event.type', 'update')) {
-                        return self.computed('svg.height') - self.y(self.valueFn(last.data)) - 1;
-                    } else {
-                        return self.computed('svg.height') + 2;
+            if (last) {
+                this.chart_extra.attr({
+                    x1: self.timescale(self.dateFn(last.timestamp)),
+                    y1: function () {
+                        if (ensure(last, 'data.event.type', 'update')) {
+                            return self.computed('svg.height') - self.y(self.valueFn(last.data)) - 1;
+                        } else {
+                            return self.computed('svg.height') + 2;
+                        }
+                    },
+                    x2: self.timescale(self.dateFn(last.next.timestamp)),
+                    y2: function () {
+                        if (ensure(last, 'data.event.type', 'update')) {
+                            return self.computed('svg.height') - self.y(self.valueFn(last.data)) - 1;
+                        } else {
+                            return self.computed('svg.height') + 2;
+                        }
                     }
-                },
-                x2: self.timescale(self.dateFn(last.next.timestamp)),
-                y2: function () {
-                    if (ensure(last, 'data.event.type', 'update')) {
-                        return self.computed('svg.height') - self.y(self.valueFn(last.data)) - 1;
-                    } else {
-                        return self.computed('svg.height') + 2;
-                    }
-                }
-            });
+                });
+            }
         },
 
         updateD3ChartFocus: function(focused, unfocused) {
@@ -398,6 +455,12 @@ Widgets.Mixins = {
                     return d == focused ? 'focused' : ''
                 }
             });
+        },
+
+        destroyD3Chart: function () {
+            this.chart.remove(); delete this.chart;
+            this.chart_border.remove(); delete this.chart_border;
+            this.chart_extra.remove(); delete this.chart_extra;
         }
     },
     Markers: {
@@ -446,6 +509,10 @@ Widgets.Mixins = {
                 }
             });
             markers.exit().remove()
+        },
+
+        destroyD3Markers: function() {
+            this.markers.remove(); delete this.markers;
         }
     },
     Aside: {

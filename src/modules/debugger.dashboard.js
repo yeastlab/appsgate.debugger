@@ -9,8 +9,9 @@ Debugger.Dashboard = function (selector, options) {
         throwError('You must specify a selector to create a Dashboard.');
     }
 
-    _.bindAll(this, 'update');
+    _.bindAll(this, 'onPacketReceived');
 
+    this._groups = {};
     this._devices = {};
     this._programs = {};
 
@@ -44,6 +45,9 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     }
                 }
             },
+            group: {
+                height: 60
+            },
             ruler: {
                 width: 30
             }
@@ -51,6 +55,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
         this._init_ui(selector);
         this._init_d3();
+        this._clean();
     },
 
     // jQuery delegate for element lookup, scoped to DOM elements within the
@@ -73,12 +78,12 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         if (this.connector) {
             // unregister if already registered.
             Debugger.logger.warn("Dashboad connection reinitialized: the dashboad was already connected to a connector.");
-            this.connector.off('frame:received', this.update);
+            this.connector.off('packet:received', this.update);
         }
 
         // register to *connector* events
         this.connector = connector;
-        this.connector.on('frame:received', this.update);
+        this.connector.on('packet:received', this.onPacketReceived);
 
         return this;
     },
@@ -87,18 +92,83 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
      * Update dashboard with new data. This is generally called by the connected
      * connector when new data are received.
      *
-     * @param data
+     * @param packet
      */
-    update: function (data) {
-        if (data instanceof Array) {
-            var lastFrame = data.pop();
-            _.each(data, function (frame) {
-                this._update_all_with_frame(frame, {render: false});
-            }, this);
-            this._update_all_with_frame(lastFrame);
-            this._notifyWidgetsOfRulerPosition();
-        } else {
-            this._update_all_with_frame(data);
+    onPacketReceived: function(packet) {
+        try {
+            if (packet.request) {
+                var updateFocusLine = false;
+
+                if (packet.eventline) {
+                    // reset the dashboard on each request
+                    this._reset();
+
+                    // update focusline with received data
+                    // note: here we prevent rendering except for the last frame
+                    var lastFrame = packet.eventline.pop();
+
+                    _.each(packet.eventline, function (frame) {
+                        this._update_focusline_with_frame(frame, {render: false});
+                    }, this);
+
+                    if (lastFrame) {
+                        this._update_focusline_with_frame(lastFrame);
+                    }
+                } else {
+                    // reset the dashboard on each request
+                    // this will not clean the focusline
+                    this._clean();
+                }
+
+                // set the default group demux
+                if (packet.groups) {
+                    this._demux = this._create_demux({grouping: packet.groups});
+                }
+
+                // update widgets with received data
+                var lastFrame = packet.data.pop();
+
+                _.each(packet.data, function (frame) {
+                    this._update_all_with_frame(frame, {render: false});
+                }, this);
+
+                if (lastFrame) {
+                    this._update_all_with_frame(lastFrame);
+                }
+
+                // update widgets according to ruler
+                //this._notifyWidgetsOfRulerPosition();
+            } else {
+                // this is a streaming packet
+                var data = packet.data;
+                if (data instanceof Array) {
+                    // update widgets with received data
+                    // note: here we prevent rendering except for the last frame
+                    var lastFrame = data.pop();
+
+                    _.each(data, function (frame) {
+                        this._update_focusline_with_frame(frame, {render: false});
+                        this._update_all_with_frame(frame, {render: false});
+                    }, this);
+
+                    if (lastFrame) {
+                        this._update_focusline_with_frame(lastFrame);
+                        this._update_all_with_frame(lastFrame);
+                    }
+                } else {
+                    this._update_focusline_with_frame(data);
+                    this._update_all_with_frame(data);
+                }
+
+                // update widgets according to ruler
+                this._notifyWidgetsOfRulerPosition();
+            }
+        } catch (e) {
+            Debugger.logger.error('Error when processing packet `#{packet}`. #{error} #{stacktrace}', {
+                packet: packet,
+                error: e,
+                stacktrace: e.stack
+            });
         }
     },
 
@@ -161,19 +231,52 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             placeholder: this.options.widget.placeholder
         });
 
+        // attach it to the dashboard
         this._attach_widget(this._focusline, this._$footer);
+    },
 
-        // create timelines
-        this._timeline = new Debugger.Widgets.Timeline({
-            id: 'timeline',
-            name: 'Main',
-            orientation: 'bottom'
-        }, {
-            height: 30,
-            placeholder: this.options.widget.placeholder
-        });
+    /**
+     * Reset dashboard to its initial state.
+     * @private
+     */
+    _reset: function() {
+        // clean groups, devices, programs
+        this._clean();
 
-        this._attach_widget(this._timeline, this._$container);
+        this._devices = {};  // reset devices
+        this._programs = {}; // reset programs
+
+        // reset focusline and domain
+        this._focusline.reset();
+        this._domain = [_.now(), 0];
+    },
+
+    /**
+     * Clean dashboard. Cleaning the dashboard will (a) clean and detach all widgets but
+     * the focusline and (b) destroy all groups.
+     * @private
+     */
+    _clean: function() {
+        // detach devices
+        _.forEach(this._devices, function(widget) {
+            this._detach_widget(widget);
+        }, this);
+
+        // detach programs
+        _.forEach(this._programs, function(widget) {
+            this._detach_widget(widget);
+        }, this);
+
+        // remove groups
+        _.forEach(this._groups, function(group) {
+            this._remove_group(group);
+        }, this);
+
+        // reset groups
+        this._groups = {};
+
+        // set default group demultiplexer
+        this._demux = this._create_demux({ func: 'type' });
     },
 
     /**
@@ -201,12 +304,13 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     },
 
     /**
-     * Update all widgets attached to the dashboard according to some `frame` data.
+     * Update focusline.
      *
-     * @param frame Data frame to update widgets with.
+     * @param frame Data frame to update the focusline with.
+     * @param options
      * @private
      */
-    _update_all_with_frame: function (frame, options) {
+    _update_focusline_with_frame: function(frame, options) {
         // update domain
         this._domain = [Math.min(this._domain[0], frame.timestamp), Math.max(this._domain[1], frame.timestamp)];
 
@@ -214,9 +318,21 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         this._focusline.update({
             timestamp: frame.timestamp,
             frame: {
-                value: _.size(frame.devices) + _.size(frame.programs)
+                value: frame.value? frame.value : _.size(frame.devices) + _.size(frame.programs)
             }
         }, this._domain, options);
+    },
+
+    /**
+     * Update all widgets attached to the dashboard according to some `frame` data.
+     *
+     * @param frame Data frame to update widgets with.
+     * @private
+     */
+    _update_all_with_frame: function (frame, options) {
+        //
+        // Devices
+        //
 
         var updated_device_ids = [];
 
@@ -244,6 +360,10 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             }
         }, this);
 
+        //
+        // Programs
+        //
+
         var updated_program_ids = [];
 
         // update devices listed in frame
@@ -270,10 +390,14 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             }
         }, this);
 
-        // update timeline
-        this._timeline.update({
-            timestamp: frame.timestamp
-        }, this._domain, options);
+        //
+        // Groups
+        //
+        _.forEach(this._groups, function (group) {
+           group.timeline.update({
+               timestamp: frame.timestamp
+           }, this._domain, options);
+        }, this);
     },
 
     /**
@@ -287,6 +411,12 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     _update_one_with_frame: function (what, id, frame, options) {
         if (this._has_widget(what, id)) {
             var widget = what === 'device' ? this._devices[id] : this._programs[id];
+
+            // attach the widget to its group if not attached
+            if (widget.isDetached()) {
+                this._attach_widget_to_group(widget);
+            }
+
             widget.update(frame, this._domain, options);
         }
     },
@@ -308,6 +438,108 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             default:
                 false;
         }
+    },
+
+    /**
+     * Create a group demultiplexer function from given `attributes`.
+     *
+     * @param attributes
+     * @private
+     */
+    _create_demux: function(attributes) {
+        if (attributes && attributes.func) {
+            switch (attributes.func) {
+                case 'type': return function(item) {
+                    return item.type? 'Devices' : 'Programs'
+                };
+                default: return function(item) {
+                    return 'Unknown'
+                };
+            }
+        } else if (attributes && attributes.grouping) {
+            return (function() {
+                var grouping = attributes.grouping;
+
+                return function(item) {
+                    var group = _.find(grouping, function(group) {
+                        return _.indexOf(group.members, item.id) !== -1;
+                    });
+
+                    if (group) {
+                        return group.name;
+                    } else {
+                        return 'Unknown';
+                    }
+                };
+            })();
+        } else {
+            return function(item) {
+                return 'Unknown';
+            };
+        }
+    },
+
+    /**
+     * Create a new group with given `attributes`.
+     *
+     * @param attributes
+     * @private
+     */
+    _create_group: function(attributes) {
+        // widget options
+        var options = {
+            width: this.options.width,
+            height: this.options.group.height,
+            margin: this.options.widget.margin,
+            placeholder: this.options.widget.placeholder,
+            ruler: this.options.ruler
+        };
+
+        // create timeline for the group
+        var timeline = new Debugger.Widgets.Timeline({
+            id: _.uniqueId('timeline'),
+            name: attributes.name,
+            orientation: 'bottom'
+        }, options);
+
+        var group = $('<div/>')
+            .attr({
+                id: _.uniqueId('group'),
+                class: 'group'
+            })
+            .append('<header/>')
+            .append('<div class="container"></div>');
+
+        // attach group to the dashboard
+        this._$container.append(group);
+
+        // attach timeline to the group
+        this._attach_widget(timeline, group.find('header')[0]);
+
+        // return group object
+        return {
+            $el: group,
+            $container: group.find('.container')[0],
+            timeline: timeline
+        };
+    },
+
+    /**
+     * Remove a group from the dashboard.
+     * @param group
+     * @private
+     */
+    _remove_group: function(group) {
+        // detach timeline
+        this._detach_widget(group.timeline);
+
+        // remove the group $el
+        group.$el.remove();
+
+        // delete group
+        delete group.$el;
+        delete group.$container;
+        delete group.timeline;
     },
 
     /**
@@ -360,6 +592,12 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                                 type: attributes.type
                             }, options);
                         break;
+                    case 'SmartPlug':
+                        widget = new Debugger.Widgets.SmartPlug({
+                                id: attributes.id,
+                                type: attributes.type
+                            }, options);
+                        break;
                     case 'ColorLight':
                         widget = new Debugger.Widgets.ColorLight({
                                 id: attributes.id,
@@ -380,18 +618,45 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     this._programs[attributes.id] = widget;
                     break;
             }
-            // attach it to the DOM
-            this._attach_widget(widget);
+
+            // find the group to which it belongs
+            var groupName = this._demux(attributes);
+            this._attach_widget_to_group(widget);
         } else {
-            //throwError('Unable to create device of type #{type}', attributes);
+            Debugger.logger.error('Unable to create device of type #{type}', attributes);
         }
 
         return widget;
     },
 
     /**
+     * Attach a widget to a group within this dashboard.
+     * If the group if not created then it creates the group first.
+     *
+     * @param widget Widget to attach
+     * @param group (optional) Name of the group
+     * @private
+     */
+    _attach_widget_to_group: function(widget, group) {
+        // if group is not provided then find it from widget attributes
+        if (_.isUndefined(group)) {
+            group = this._demux(widget.attributes);
+        }
+
+        // if group is not created then create it
+        if (_.isUndefined(this._groups[group])) {
+            this._groups[group] = this._create_group({
+                name: group
+            });
+        }
+
+        // attach it to the group in the DOM
+        this._attach_widget(widget, this._groups[group].$container);
+    },
+
+    /**
      * Attach a widget to a target element within this dashboard.
-     * If multiple elements match the target then the widget is append to the first found.
+     * If multiple elements match the target then the widget is appended to the first found.
      *
      * @param widget
      * @param target
@@ -402,6 +667,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             throwError("Widget #{widget} already attached to dashboard.", { widget: widget});
         }
 
+        // attach
         if (target) {
             this.$(target).first().append(widget.$el);
         } else {
@@ -410,5 +676,20 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
         // notify
         this.triggerMethod.apply(widget, ['attached'].concat(this.$el));
+    },
+
+    /**
+     * Detach a widget from this dashboard.
+     * @param widget
+     * @private
+     */
+    _detach_widget: function(widget) {
+        var parent = widget.$el.parent();
+
+        // notify
+        this.triggerMethod.apply(widget, ['detached'].concat(parent));
+
+        // detach
+        widget.$el.remove();
     }
 });

@@ -13,18 +13,17 @@ Widgets.Timeline = Widgets.Widget.extend({
         }
     },
 
+    // @override
     onInitUI: function () {
-        var $title = $('<span/>')
-            .addClass('title')
-            .css({
-                'line-height': parseInt(this.options.height) + "px"
-            })
-            .text(this.attributes.name);
+        Widgets.Widget.prototype.onInitUI.apply(this, arguments);
 
-        this._$sidebar.append($title);
+        this._$name.text(this.attributes.name);
     },
 
+    // @override
     onInitD3: function () {
+        Widgets.Widget.prototype.onInitD3.apply(this, arguments);
+
         this.xAxis = d3.svg.axis()
             .scale(this.timescale)
             .orient(this.attributes.orientation);
@@ -34,7 +33,15 @@ Widgets.Timeline = Widgets.Widget.extend({
             .call(this.xAxis);
     },
 
+    // @override
     onFrameUpdate: function () {
+        Widgets.Widget.prototype.onFrameUpdate.apply(this, arguments);
+
         this.xAxisGroup.call(this.xAxis);
+    },
+
+    // @override
+    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
+        // do nothing
     }
 });

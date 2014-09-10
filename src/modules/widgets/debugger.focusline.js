@@ -9,12 +9,23 @@ Widgets.Focusline = Widgets.Widget.extend({
     },
 
     onInitD3: function () {
+        Widgets.Widget.prototype.onInitD3.apply(this, arguments);
+
         this.y = d3.scale.linear()
             .range([0, this.computed('svg.height')-1]);
         this.chart = this.svg.append('g').attr({class: 'focusline'}).selectAll('rect');
     },
 
+    onDestroyD3: function() {
+        Widgets.Widget.prototype.onDestroyD3.apply(this, arguments);
+
+        delete this.y;
+        this.chart.remove(); delete this.chart;
+    },
+
     onFrameUpdate: function () {
+        Widgets.Widget.prototype.onFrameUpdate.apply(this, arguments);
+
         var self = this;
 
         this.y.domain(d3.extent(this.buffer.all(), function (d) {

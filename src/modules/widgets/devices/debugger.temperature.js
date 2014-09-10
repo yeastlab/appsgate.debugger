@@ -48,6 +48,13 @@ Widgets.Temperature = Widgets.Device.extend({
         this.initD3Chart();
     },
 
+    onDestroyD3: function() {
+        Widgets.Device.prototype.onDestroyD3.apply(this, arguments);
+
+        delete this.y;
+        this.destroyD3Chart();
+    },
+
     onFrameUpdate: function () {
         Widgets.Device.prototype.onFrameUpdate.apply(this, arguments);
 

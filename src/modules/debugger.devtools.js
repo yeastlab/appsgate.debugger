@@ -17,7 +17,7 @@ _.extend(Debugger.Monitor.prototype, Backbone.Events, {
         options || (options = {});
 
         // set default options in case some is omitted
-        this.options = _.defaults(options, {
+        this.options = defaultsDeep(options, {
             id: _.uniqueId('monitor')
         });
 

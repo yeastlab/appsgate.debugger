@@ -13,22 +13,34 @@ Widgets.ColorLight = Widgets.Device.extend({
     },
 
     onBeforeInitD3: function () {
-        if (_.isFunction(Widgets.Device.prototype.onBeforeInitD3)) {
-            Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
-        }
+        Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
 
-        // setup d3 functions
+        // setup d3 value function
         this.valueFn = function (d) {
             try {
                 if (d.timestamp) {
-                    return d.data.event.state.state;
+                    return parseBoolean(d.data.event.state.state);
                 } else {
-                    return d.event.state.state;
+                    return parseBoolean(d.event.state.state);
                 }
             } catch (e) {
-                return 'false';
+                return false;
             }
         };
+
+        // setup d3 color function
+        this.colorFn = function (d) {
+            try {
+                var state = d.timestamp ? d.data.event.state : d.event.state;
+                return d3.hsl(
+                        Math.max(0.0, Math.min(parseInt(state.color) / 65535.0, 1.0)) * 360,
+                    Math.max(0.0, Math.min(parseInt(state.saturation) / 254.0, 1.0)),
+                    Math.max(0.0, Math.min(parseInt(state.brightness) / 254.0, 1.0))
+                );
+            } catch (e) {
+                return d3.hsl(0, 0, 0);
+            }
+        }
     },
 
     onInitD3: function () {
@@ -36,15 +48,20 @@ Widgets.ColorLight = Widgets.Device.extend({
 
         this.y = d3.scale.ordinal()
             .range([0, this.computed('svg.height') - 1])
-            .domain(['false', 'true']);
+            .domain([false, true]);
 
         this.initD3Chart();
     },
 
+    onDestroyD3: function() {
+        Widgets.Device.prototype.onDestroyD3.apply(this, arguments);
+
+        delete this.y;
+        this.destroyD3Chart();
+    },
+
     onFrameUpdate: function () {
         Widgets.Device.prototype.onFrameUpdate.apply(this, arguments);
-
-        var self = this;
 
         this.updateD3Chart();
     },
@@ -53,10 +70,14 @@ Widgets.ColorLight = Widgets.Device.extend({
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
         if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {
-            this._$picto.attr({class: 'picto picto-' + focusedFrame.data.event.picto});
+            this._$picto.attr({class: 'picto picto-' + focusedFrame.data.event.picto}).css({
+                'background-color': this.valueFn(focusedFrame) ? this.colorFn(focusedFrame).toString() : 'transparent'
+            });
         } else {
             // fallback
-            this._$picto.attr({class: 'picto picto-colorlight_type'});
+            this._$picto.attr({class: 'picto picto-colorlight_type'}).css({
+                'background-color': 'transparent'
+            });
         }
 
         this.updateD3ChartFocus(focusedFrame, lastFocusedFrame);

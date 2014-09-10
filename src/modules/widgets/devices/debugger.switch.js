@@ -7,7 +7,8 @@ Widgets.Switch = Widgets.Device.extend({
     defaults: {
         kind: 'switch',
         buffer: {
-            pairing: true
+            pairing: true,
+            shadowing: true
         }
     },
 
@@ -21,6 +22,15 @@ Widgets.Switch = Widgets.Device.extend({
         this.spikes = this.svg.append('g').attr({class: 'spikes'}).selectAll('line');
         this.border = this.svg.insert('path', /* insert before */ '.markers').attr({class: 'border'});
         this.border_extra = this.svg.insert('line', /* insert before */ '.markers').attr({class: 'border pending'});
+    },
+
+    onDestroyD3: function() {
+        Widgets.Device.prototype.onDestroyD3.apply(this, arguments);
+
+        delete this.y;
+        this.spikes.remove(); delete this.spikes;
+        this.border.remove(); delete this.border;
+        this.border_extra.remove(); delete this.border_extra;
     },
 
     onFrameUpdate: function () {
@@ -63,7 +73,6 @@ Widgets.Switch = Widgets.Device.extend({
         //
         // borders
         //
-        var last = this.buffer.last();
         var line = d3.svg.line()
             .x(function (d) {
                 return self.timescale(self.dateFn(d.timestamp));
@@ -81,24 +90,28 @@ Widgets.Switch = Widgets.Device.extend({
                 return d.timestamp
             })
             .attr('d', line);
-        this.border_extra.attr({
-            x1: self.timescale(self.dateFn(last.timestamp)),
-            y1: function() {
-                if (ensure(last, 'data.event.type', 'update')) {
-                    return self.computed('svg.height') -1 ;
-                } else {
-                    return self.computed('svg.height') + 2;
+
+        var last = this.buffer.last();
+        if (last) {
+            this.border_extra.attr({
+                x1: self.timescale(self.dateFn(last.timestamp)),
+                y1: function () {
+                    if (ensure(last, 'data.event.type', 'update')) {
+                        return self.computed('svg.height') - 1;
+                    } else {
+                        return self.computed('svg.height') + 2;
+                    }
+                },
+                x2: self.timescale(self.dateFn(last.next.timestamp)),
+                y2: function () {
+                    if (ensure(last, 'data.event.type', 'update')) {
+                        return self.computed('svg.height') - 1;
+                    } else {
+                        return self.computed('svg.height') + 2;
+                    }
                 }
-            },
-            x2: self.timescale(self.dateFn(last.next.timestamp)),
-            y2: function() {
-                if (ensure(last, 'data.event.type', 'update')) {
-                    return self.computed('svg.height') - 1;
-                } else {
-                    return self.computed('svg.height') + 2;
-                }
-            }
-        });
+            });
+        }
     },
 
     onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {

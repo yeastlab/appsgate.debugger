@@ -134,10 +134,20 @@ Debugger.triggerMethod = (function () {
     return triggerMethod;
 })();
 
+
+/**
+ * Smart buffer implementation.
+ *
+ * The SmartBuffer can buffer data intelligently using various techniques:
+ * - standard (default) - behave like a standard queue
+ * - pairing - pair buffered data two by two
+ * - shadowing - shadow last element when needed
+ * - ignoreData - just keep timestamp and ignore data
+ */
 Debugger.SmartBuffer = (function () {
 
     var SmartBuffer = function (options) {
-        this.data = [];
+        this._buffer = [];
         this.options = defaultsDeep({}, options, {
             pairing: false,
             shadowing: false,
@@ -146,80 +156,91 @@ Debugger.SmartBuffer = (function () {
     };
 
     _.extend(SmartBuffer.prototype, {
+        /**
+         * Contact
+         * @param bulk
+         */
         concat: function (bulk) {
-            //@todo optimize...
             var self = this;
             _.each(bulk, function (f) {
-                self.push.apply(self, f);
-            });
+                this.push.apply(self, f);
+            }, this);
         },
 
+        /**
+         * Push new `data` with given `timestamp`.
+         * @param timestamp
+         * @param data
+         */
         push: function (timestamp, data) {
             // in case we just keep track of timestamp
             if (this.options.ignoreData) {
-                this.data.push({
+                this._buffer.push({
                     timestamp: timestamp
                 });
                 return;
             }
 
-            // return if not data and frame is undefined
-            if (_.isEmpty(this.data) && _.isUndefined(data)) {
+            // return if buffer is empty and data is undefined
+            if (_.isEmpty(this._buffer) && _.isUndefined(data)) {
                 return;
             }
 
             if (this.options.pairing) {
-                if (!_.isUndefined(data) && _.isEmpty(this.data)) {
-                    this.data.push({
+                // in case we are pairing data
+                if (data !== undefined && _.isEmpty(this._buffer)) {
+                    // if buffer is empty just push the new data
+                    this._buffer.push({
                         timestamp: timestamp,
                         data: data,
-                        next: {
+                        next: this.options.shadowing? {
                             timestamp: timestamp,
                             data: data
-                        }
+                        } : null
                     });
-                } else if (!_.isUndefined(data)) {
-                    // replace previous shadow
-                    this.data[this.size() - 1].next = {
+                } else if (data !== undefined) {
+                    // set previous.next
+                    this._buffer[this.size() - 1].next = {
                         timestamp: timestamp,
                         data: data
                     };
                     // push a new frame
-                    this.data.push({
+                    this._buffer.push({
                         timestamp: timestamp,
                         data: data,
-                        next: {
+                        next: this.options.shadowing? {
                             timestamp: timestamp,
                             data: data
-                        }
+                        } : null
                     });
-                } else {
-                    // update shadow timestamp
-                    this.data[this.size() - 1].next.timestamp = timestamp;
+                } else if (this.options.shadowing)  {
+                    // if shadowing then update shadow timestamp
+                    this._buffer[this.size() - 1].next.timestamp = timestamp;
                 }
             } else {
-                if (!_.isUndefined(data) && this._lastIsShadow) {
-                    // replace shadow by new frame
-                    this.data[this.size() - 1] = {
+                // pairing is not activated
+                if (data !== undefined && this._lastIsShadow) {
+                    // replace shadow by new frame if shadowing is activated
+                    this._buffer[this.size() - 1] = {
                         timestamp: timestamp,
                         data: data
                     };
                     // last is not a shadow anymore
                     this._lastIsShadow = false;
-                } else if (_.isUndefined(data) && this._lastIsShadow) {
-                    // update shadow timestamp
-                    this.data[this.size() - 1].timestamp = timestamp;
-                } else if (!_.isUndefined(data)) {
+                } else if (data !== undefined && this._lastIsShadow) {
+                    // update shadow timestamp if shadowing is activated
+                    this._buffer[this.size() - 1].timestamp = timestamp;
+                } else if (data !== undefined) {
                     // push new data
-                    this.data.push({
+                    this._buffer.push({
                         timestamp: timestamp,
                         data: data
                     });
-                } else {
-                    // push a shadow
-                    this.data.push({
+                } else if (this.options.shadowing) {
+                    // push a shadow if shadowing is activated
+                    this._buffer.push({
                         timestamp: timestamp,
-                        data: this.data[this.size() - 1].data
+                        data: this._buffer[this.size() - 1].data
                     });
                     // make last a shadow
                     this._lastIsShadow = true;
@@ -228,34 +249,34 @@ Debugger.SmartBuffer = (function () {
         },
 
         all: function () {
-            return this.data;
+            return this._buffer;
         },
 
         first: function() {
-            return _.first(this.data);
+            return _.first(this._buffer);
         },
 
         last: function() {
-            return _.last(this.data);
+            return _.last(this._buffer);
         },
 
         select: function (predicate) {
-            return _.filter(this.data, predicate);
+            return _.filter(this._buffer, predicate);
         },
 
         reject: function (predicate) {
-            return _.reject(this.data, predicate);
+            return _.reject(this._buffer, predicate);
         },
 
         domain: function (dateFn) {
-            if (_.isUndefined(this.data)) return null;
+            if (_.isUndefined(this._buffer)) return null;
 
             dateFn || (dateFn = function (d) {
                 return d;
             });
 
-            var min = this.data[0];
-            var max = _.max(this.data, function (d) {
+            var min = this._buffer[0];
+            var max = _.max(this._buffer, function (d) {
                 return d.next ? d.next.timestamp : d.timestamp
             });
 
@@ -270,11 +291,11 @@ Debugger.SmartBuffer = (function () {
          */
         at: function (timestamp) {
             if (this.options.pairing) {
-                return _.findLast(this.data, function (frame) {
+                return _.findLast(this._buffer, function (frame) {
                     return frame.timestamp <= timestamp && timestamp <= frame.next.timestamp;
                 });
             } else {
-                return _.findLast(this.data, function (frame) {
+                return _.findLast(this._buffer, function (frame) {
                     return frame.timestamp == timestamp;
                 });
             }
@@ -293,20 +314,36 @@ Debugger.SmartBuffer = (function () {
             var lookup = direction == 'left' ? _.find : _.findLast;
 
             if (this.options.pairing) {
-                return lookup.call(this, this.data, function (frame) {
+                return lookup.call(this, this._buffer, function (frame) {
                     return (range[0] <= frame.timestamp && frame.timestamp <= range[1])
-                        || (range[0] <= frame.next.timestamp && frame.next.timestamp <= range[1])
-                        || (frame.timestamp <= range[0] && range[1] <= frame.next.timestamp);
+                        || (frame.next && range[0] <= frame.next.timestamp && frame.next.timestamp <= range[1])
+                        || (frame.timestamp <= range[0] && frame.next && range[1] <= frame.next.timestamp);
                 });
             } else {
-                return lookup.call(this, this.data, function (frame) {
+                return lookup.call(this, this._buffer, function (frame) {
                     return range[0] <= frame.timestamp && frame.timestamp <= range[1];
                 });
             }
         },
 
+        /**
+         * Return size of the buffer.
+         *
+         * @returns {Number}
+         */
         size: function () {
-            return this.data.length;
+            return this._buffer.length;
+        },
+
+        /**
+         * Clear the buffer.
+         */
+        clear: function() {
+            // we don't use this._buffer = [] here cause there can be other references
+            // to this array in the code.
+            while(this._buffer.length > 0) {
+                this._buffer.pop();
+            }
         }
     });
 
