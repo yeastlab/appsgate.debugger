@@ -46,10 +46,10 @@ Widgets.KeycardSwitch = Widgets.Device.extend({
         this.destroyD3Chart();
     },
 
-    onFrameUpdate: function () {
-        Widgets.Device.prototype.onFrameUpdate.apply(this, arguments);
+    onRender: function () {
+        Widgets.Device.prototype.onRender.apply(this, arguments);
 
-        this.updateD3Chart();
+        this.renderD3Chart();
     },
 
     onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {

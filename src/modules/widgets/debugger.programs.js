@@ -20,7 +20,9 @@ Widgets.Program = Widgets.Widget.extend({
         this.initD3Markers();
     },
 
-    onFrameUpdate: function () {
+    onRender: function () {
+        Widgets.Widget.prototype.onRender.apply(this, arguments);
+
         var self = this;
 
         //
@@ -72,7 +74,7 @@ Widgets.Program = Widgets.Widget.extend({
         //
         // markers
         //
-        this.updateD3Markers();
+        this.renderD3Markers();
     },
 
     onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
@@ -90,4 +92,4 @@ Widgets.Program = Widgets.Widget.extend({
     }
 });
 
-_.extend(Widgets.Program.prototype, Widgets.Mixins.Markers);
+_.extend(Widgets.Program.prototype, Widgets.Mixins.Markers, Widgets.Mixins.Focus);

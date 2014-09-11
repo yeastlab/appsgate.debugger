@@ -33,8 +33,8 @@ Widgets.Switch = Widgets.Device.extend({
         this.border_extra.remove(); delete this.border_extra;
     },
 
-    onFrameUpdate: function () {
-        Widgets.Device.prototype.onFrameUpdate.apply(this, arguments);
+    onRender: function () {
+        Widgets.Device.prototype.onRender.apply(this, arguments);
 
         var self = this;
 

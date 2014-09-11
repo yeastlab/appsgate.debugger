@@ -34,8 +34,8 @@ Widgets.Device = Widgets.Widget.extend({
         this.destroyD3Markers();
     },
 
-    onFrameUpdate: function () {
-        Widgets.Widget.prototype.onFrameUpdate.apply(this, arguments);
+    onRender: function () {
+        Widgets.Widget.prototype.onRender.apply(this, arguments);
 
         var self = this;
 
@@ -81,7 +81,7 @@ Widgets.Device = Widgets.Widget.extend({
         status.exit().remove();
 
         // Markers
-        this.updateD3Markers();
+        this.renderD3Markers();
     },
 
     onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
@@ -101,7 +101,7 @@ Widgets.Device = Widgets.Widget.extend({
     }
 });
 
-_.extend(Widgets.Device.prototype, Widgets.Mixins.Markers);
+_.extend(Widgets.Device.prototype, Widgets.Mixins.Markers, Widgets.Mixins.Focus);
 
 // Specific devices
 // @include devices/debugger.temperature.js

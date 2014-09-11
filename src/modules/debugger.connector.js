@@ -126,6 +126,7 @@ _.extend(Debugger.Connector.prototype, Backbone.Events, {
             withEventLine: false,
             screenResolution: 930,
             selectorResolution: 10,
+            brushResolution: 930,
             order: 'type'
         });
 

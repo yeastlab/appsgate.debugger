@@ -251,14 +251,14 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
         return this.exprs[property].value;
     },
 
-    update: function (data, domain, options) {
+    update: function (data, focus, options) {
         // set default options
-        options = defaultsDeep({}, options, {
+        options = _.defaults({}, options, {
             render: true
         });
 
         // build up args for callback
-        var args = Array.prototype.slice.call([data, domain, options]);
+        var args = Array.prototype.slice.call([data, focus, options]);
 
         // trigger onBeforeFrameUpdate
         this.triggerMethod.apply(this, ['before:frame:update'].concat(args));
@@ -270,18 +270,36 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
             this.buffer.push(data.timestamp, data.frame);
         }
 
+        // trigger onFrameUpdate
+        this.triggerMethod.apply(this, ['frame:update'].concat(args));
+
         // render only if required
         if (options && options.render) {
-            // update d3
-            this.timescale.domain(d3.extent(domain, this.dateFn));
+            // update timescale
+            //this.timescale.domain(d3.extent(domain, this.dateFn));
+            this.timescale.domain(focus);
 
-            // trigger onFrameUpdate
-            this.triggerMethod.apply(this, ['frame:update'].concat(args));
+            // render
+            this._onRender();
         }
     },
 
     onBeforeFrameUpdate: function() { /* default implementation: do nothing */ },
     onFrameUpdate: function() { /* default implementation: do nothing */ },
+
+    _onRender: function() {
+        // build up args for callback
+        var args = Array.prototype.slice.call(arguments);
+
+        // trigger onBeforeRender
+        this.triggerMethod.apply(this, ['before:render'].concat(args));
+
+        // trigger onRender
+        this.triggerMethod.apply(this, ['render'].concat(args));
+    },
+
+    onBeforeRender: function() { /* default implementation: do nothing */ },
+    onRender: function() { /* default implementation: do nothing */ },
 
     /**
      * Main entry point for notifying widget that the ruler's focus just changed.
@@ -314,7 +332,7 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
         }
 
         // hide widget if it does not have any state (meaning it disappeared)
-        if (missing(this._focusedFrame, 'data.event.state') && missing(this._focusedFrame, 'data.decorations')) {
+        if (missing(this._focusedFrame, 'data.event.state')) {
             this.$el.css('opacity', 0.1);
         } else {
             this.$el.css('opacity', 1);
@@ -355,7 +373,7 @@ Widgets.Mixins = {
             this.chart_border = this.svg.insert('path', '.markers').attr({class: 'border'});
             this.chart_extra = this.svg.insert('line', /* insert before */ '.markers').attr({class: 'border pending'});
         },
-        updateD3Chart: function () {
+        renderD3Chart: function () {
             var self = this;
 
             // chart
@@ -468,7 +486,7 @@ Widgets.Mixins = {
             this.markers = this.svg.append('g').attr({class: 'markers'}).selectAll('.marker');
         },
 
-        updateD3Markers: function () {
+        renderD3Markers: function () {
             var self = this;
 
             //
@@ -528,6 +546,12 @@ Widgets.Mixins = {
                     'right': this.computed('svg.width') + this.options.ruler.width / 2 - position
                 });
             }
+        }
+    },
+    Focus: {
+        onFocusChange: function(brush) {
+            this.timescale.domain(brush.empty() ? brush.x().domain() : brush.extent());
+            this._onRender();
         }
     }
 };

@@ -32,6 +32,7 @@ $status_disconnection_border_color: rgba(206, 66, 66, 0.80);
 $status_disconnection_border_focused_color: rgba(206, 66, 66, 1);
 
 $focusline_color: rgba(105, 105, 105, 0.5);
+$focusline_selector_color: rgba(144, 195, 191, 0.5);
 
 //
 // Layout definition
@@ -236,6 +237,12 @@ html, body {
     .focused {
         stroke-width: $device_state_border_width * 1.5;
         stroke: $device_state_border_focused_color;
+    }
+}
+
+.brush {
+    .extent {
+        fill: $focusline_selector_color;
     }
 }
 

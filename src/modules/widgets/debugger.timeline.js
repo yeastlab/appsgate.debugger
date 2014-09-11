@@ -34,8 +34,8 @@ Widgets.Timeline = Widgets.Widget.extend({
     },
 
     // @override
-    onFrameUpdate: function () {
-        Widgets.Widget.prototype.onFrameUpdate.apply(this, arguments);
+    onRender: function () {
+        Widgets.Widget.prototype.onRender.apply(this, arguments);
 
         this.xAxisGroup.call(this.xAxis);
     },
@@ -45,3 +45,5 @@ Widgets.Timeline = Widgets.Widget.extend({
         // do nothing
     }
 });
+
+_.extend(Widgets.Timeline.prototype, Widgets.Mixins.Focus);

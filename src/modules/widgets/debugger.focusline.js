@@ -11,9 +11,33 @@ Widgets.Focusline = Widgets.Widget.extend({
     onInitD3: function () {
         Widgets.Widget.prototype.onInitD3.apply(this, arguments);
 
+        var self = this;
+
         this.y = d3.scale.linear()
             .range([0, this.computed('svg.height')-1]);
+
+        // define a brush for focus selection
+        this.brush = d3.svg.brush().x(this.timescale)
+            .on('brush', function () {
+                self.triggerMethod.apply(self, ['focus:change'].concat([self.brush]));
+            })
+            .on('brushend', function () {
+                var extent = self.brush.empty() ? self.brush.x().domain() : self.brush.extent();
+                var width = parseInt(self.timescale(extent[1]) - self.timescale(extent[0]));
+                self.triggerMethod.apply(self, ['brush:resize'].concat([width]));
+            });
+
+        // define chart for drawing events
         this.chart = this.svg.append('g').attr({class: 'focusline'}).selectAll('rect');
+
+        // define context for displaying focused area
+        this.context = this.svg.append("g").attr("class", "context").append("g")
+            .attr("class", "x brush")
+            .call(this.brush)
+            .selectAll("rect")
+            .attr("y", -6)
+            .attr("height", this.computed('svg.height') + 7);
+
     },
 
     onDestroyD3: function() {
@@ -23,8 +47,8 @@ Widgets.Focusline = Widgets.Widget.extend({
         this.chart.remove(); delete this.chart;
     },
 
-    onFrameUpdate: function () {
-        Widgets.Widget.prototype.onFrameUpdate.apply(this, arguments);
+    onRender: function () {
+        Widgets.Widget.prototype.onRender.apply(this, arguments);
 
         var self = this;
 

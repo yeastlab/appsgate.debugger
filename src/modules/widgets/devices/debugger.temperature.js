@@ -55,8 +55,8 @@ Widgets.Temperature = Widgets.Device.extend({
         this.destroyD3Chart();
     },
 
-    onFrameUpdate: function () {
-        Widgets.Device.prototype.onFrameUpdate.apply(this, arguments);
+    onRender: function () {
+        Widgets.Device.prototype.onRender.apply(this, arguments);
 
         var self = this;
 
@@ -67,7 +67,7 @@ Widgets.Temperature = Widgets.Device.extend({
             ), self.valueFn)
         );
 
-        this.updateD3Chart();
+        this.renderD3Chart();
     },
 
     onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
@@ -84,4 +84,4 @@ Widgets.Temperature = Widgets.Device.extend({
     }
 });
 
-_.extend(Widgets.Temperature.prototype, Widgets.Mixins.Chart);
+_.extend(Widgets.Temperature.prototype, Widgets.Mixins.Chart, Widgets.Mixins.Focus);

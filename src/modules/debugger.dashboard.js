@@ -172,6 +172,56 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }
     },
 
+    /**
+     * Request initial history trace.
+     *
+     * @param params
+     */
+    requestInitialHistoryTrace: function(params) {
+        params = _.defaults({}, params, {
+            order: 'type'
+        });
+
+        if (this.connector) {
+            this.connector.requestInitialHistoryTrace({
+                screenResolution: this._focusline.computed('svg.width'),
+                selectorResolution: this.options.ruler.width,
+                brushResolution: this._focusline.computed('svg.width'),
+                order: params.order
+            })
+        }
+    },
+
+    /**
+     * Request history trace.
+     *
+     * @param params
+     */
+    requestHistoryTrace: function(params) {
+        params = _.defaults({}, params, {
+            order: 'type',
+            brushResolution: this._focusline.computed('svg.width')
+        });
+
+        if (this.connector) {
+            this.connector.requestHistoryTrace({
+                screenResolution: this._focusline.computed('svg.width'),
+                selectorResolution: this.options.ruler.width,
+                brushResolution: params.brushResolution,
+                order: params.order
+            })
+        }
+    },
+
+    /**
+     * Request live trace.
+     */
+    requestLiveTrace: function() {
+        if (this.connector) {
+            this.connector.requestLiveTrace();
+        }
+    },
+
     // Private API
 
     /**
@@ -231,6 +281,10 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             placeholder: this.options.widget.placeholder
         });
 
+        // bind dashboard to its events
+        this.listenTo(this._focusline, 'focus:change', this._onFocusChange);
+        this.listenTo(this._focusline, 'brush:resize', this._onBrushResize);
+
         // attach it to the dashboard
         this._attach_widget(this._focusline, this._$footer);
     },
@@ -277,6 +331,27 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
         // set default group demultiplexer
         this._demux = this._create_demux({ func: 'type' });
+    },
+
+    /**
+     * Focus change callback.
+     * @private
+     */
+    _onFocusChange: function() {
+        this._notifyWidgetsOnRulerFocusChanged(this._$ruler.position());
+    },
+
+    /**
+     * Brush resize callback.
+     * @param width Width of the resized brush.
+     * @private
+     */
+    _onBrushResize: function(width) {
+        this.triggerMethod.apply(this, ['zoom:request'].concat([{
+            screenResolution: this._focusline.computed('svg.width'),
+            selectorResolution: 10,
+            brushResolution: width
+        }]));
     },
 
     /**
@@ -330,6 +405,9 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
      * @private
      */
     _update_all_with_frame: function (frame, options) {
+        // update focus
+        this._focus = this._focusline.brush.empty()? this._domain : this._focusline.brush.extent();
+
         //
         // Devices
         //
@@ -396,7 +474,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         _.forEach(this._groups, function (group) {
            group.timeline.update({
                timestamp: frame.timestamp
-           }, this._domain, options);
+           }, this._focus, options);
         }, this);
     },
 
@@ -417,7 +495,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                 this._attach_widget_to_group(widget);
             }
 
-            widget.update(frame, this._domain, options);
+            widget.update(frame, this._focus, options);
         }
     },
 
@@ -501,6 +579,11 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             name: attributes.name,
             orientation: 'bottom'
         }, options);
+
+        // bind to focusline
+        if (_.isFunction(timeline.onFocusChange)) {
+            timeline.listenTo(this._focusline, 'focus:change', timeline.onFocusChange);
+        }
 
         var group = $('<div/>')
             .attr({
@@ -617,6 +700,11 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                 case 'program':
                     this._programs[attributes.id] = widget;
                     break;
+            }
+
+            // bind to focusline
+            if (_.isFunction(widget.onFocusChange)) {
+                widget.listenTo(this._focusline, 'focus:change', widget.onFocusChange);
             }
 
             // find the group to which it belongs
