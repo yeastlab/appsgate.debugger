@@ -355,6 +355,29 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     },
 
     /**
+     * Widget marker click callback.
+     * @param decorations Array of decorations associated to the marker.
+     * @private
+     */
+    _onWidgetMarkerClick: function(decorations) {
+        var textContent = '';
+        var htmlContent = '';
+
+        // Build basic string representation of `decorations` array
+        // both as plain text and HTML.
+        _.each(_.sortBy(decorations, function(decoration) { return parseInt(decoration.order) }), function(decoration) {
+            textContent += decoration.description + '\n';
+            htmlContent += decoration.description + '</br>';
+        });
+
+        // Trigger `marker:click` event with following arguments:
+        // - decorations: Arrays - list of decorations associated to the marker
+        // - textContent: String - concatenations of all decorations to plain text
+        // - htmlContent: String - concatenations of all decorations to HTML
+        this.triggerMethod.apply(this, ['marker:click'].concat([decorations, textContent, htmlContent]));
+    },
+
+    /**
      * Notify widgets of the position of the ruler.
      *
      * @private
@@ -706,6 +729,9 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             if (_.isFunction(widget.onFocusChange)) {
                 widget.listenTo(this._focusline, 'focus:change', widget.onFocusChange);
             }
+
+            // bind dashboard to widget events
+            this.listenTo(widget, 'marker:click', this._onWidgetMarkerClick);
 
             // find the group to which it belongs
             var groupName = this._demux(attributes);

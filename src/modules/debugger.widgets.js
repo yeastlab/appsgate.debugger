@@ -519,7 +519,7 @@ Widgets.Mixins = {
                     'transform': 'scale(1.5) translate(' + (-5 * 1.5) + ',' + (self.computed('svg.height') / 1.5 - (10 * 1.5)) + ')',
                 })
                 .on("click", function (d) {
-                    alert(d.data.decorations[0].description);
+                    self.triggerMethod.apply(this, ['marker:click'].concat([d.data.decorations]));
                 });
             markers.attr({
                 transform: function (d) {

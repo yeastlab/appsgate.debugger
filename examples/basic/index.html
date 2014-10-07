@@ -62,6 +62,11 @@
                 dashboard.requestHistoryTrace(context);
             });
 
+            // listen to marker click event from dashboard
+            dashboard.on('marker:click', function (decorations, textContent, htmlContent) {
+                alert(textContent);
+            });
+
             // prompt server for initial history trace
             dashboard.requestInitialHistoryTrace();
         });
