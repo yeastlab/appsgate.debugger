@@ -1,35 +1,44 @@
-/**
- * Base class for Device widget.
- */
+// Widgets.Device
+// --------------
 
 Widgets.Device = Widgets.Widget.extend({
 
     onInitUI: function () {
-        this._$name = $('<div/>').addClass('title').css({
-            'line-height': this.computed('svg.height') + 'px'
-        });
         this._$picto = $('<div/>').addClass('picto').css({
             'height': this.computed('svg.height'),
             'line-height': this.computed('svg.height') + 'px',
             'background-size': this.computed('svg.height') + 'px ' + this.computed('svg.height') + 'px',
             'width': this.computed('svg.height')
         });
-        this._$sidebar.append(this._$name, this._$picto);
+        this._$sidebar.append(this._$picto);
     },
 
     onInitD3: function () {
-        // status is used to display connection/disconnection status
+        Widgets.Widget.prototype.onInitD3.apply(this, arguments);
+
+        // Status is used to display connection/disconnection status
         this.status = this.svg.append('g').attr({class: 'status'}).selectAll('line');
 
-        // markers is used to display decoration markers
         this.initD3Markers();
     },
 
-    onFrameUpdate: function () {
+    onDestroyD3: function() {
+        Widgets.Widget.prototype.onDestroyD3.apply(this, arguments);
+
+        // Destroy status
+        this.status.remove(); delete this.status;
+
+        // Destroy markers
+        this.destroyD3Markers();
+    },
+
+    onRender: function () {
+        Widgets.Widget.prototype.onRender.apply(this, arguments);
+
         var self = this;
 
         //
-        // status
+        // Render status
         //
         var status = this.status = this.status.data(
             this.buffer.select(function (d) {
@@ -52,18 +61,9 @@ Widgets.Device = Widgets.Widget.extend({
                 return self.timescale(self.dateFn(d.next.timestamp));
             },
             y2: this.computed('svg.height') - 1,
-            stroke: function (d) {
-                if (d.data.event.type === 'update' && d.data.event.state.status === 'problem') {
-                    return 'orange';
-                } else if (d.data.event.type == 'connection') {
-                    return 'green';
-                } else if (d.data.event.type == 'disconnection') {
-                    return 'red';
-                }
-            },
-            'stroke-width': 2,
+            class: function (d) { return d.data.event.type },
             'stroke-linecap': 'round',
-            'stroke-dasharray': "1, 5"
+            'stroke-dasharray': '1, 5'
         });
         status.attr({
             x1: function (d) {
@@ -71,39 +71,38 @@ Widgets.Device = Widgets.Widget.extend({
             },
             x2: function (d) {
                 return self.timescale(self.dateFn(d.next.timestamp))
-            }
+            },
+            class: function (d) { return d.data.event.type },
+            'stroke-linecap': 'round',
+            'stroke-dasharray': '1, 5'
         });
         status.exit().remove();
 
-        // Markers
-        this.updateD3Markers();
+        // Render markers
+        this.renderD3Markers();
     },
 
-    onRulerFocusUpdate: function (position, timestamp, frame) {
-        // update `aside` position
-        if (position < this.computed('svg.width') / 2) {
-            this._$aside.css({
-                'left': position + this.options.placeholder.sidebar.width + this.options.ruler.width / 2,
-                'right': 'auto'
-            });
-        } else {
-            this._$aside.css({
-                'left': 'auto',
-                'right': this.computed('svg.width') + this.options.ruler.width / 2 - position
-            });
-        }
+    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
+        Widgets.Widget.prototype.onRulerFocusUpdate.apply(this, arguments);
 
-        if (frame && frame.data) {
-            this._$name.text(frame.data.name);
-        }
+        var status = this.status.data(
+            _.compact([focusedFrame, lastFocusedFrame]),
+            function (d) {
+                return d.timestamp
+            }
+        );
+
+        status.classed('focused', function(d) {
+            return d == focusedFrame
+        });
     }
 });
 
-_.extend(Widgets.Device.prototype, Widgets.Mixins.Markers);
+_.extend(Widgets.Device.prototype, Widgets.Mixins.Markers, Widgets.Mixins.Focus);
 
-// Specific devices
 // @include devices/debugger.temperature.js
 // @include devices/debugger.switch.js
 // @include devices/debugger.contact.js
 // @include devices/debugger.keycardswitch.js
+// @include devices/debugger.smartplug.js
 // @include devices/debugger.colorlight.js

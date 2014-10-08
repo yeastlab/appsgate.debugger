@@ -1,6 +1,5 @@
-/**
- * Base class for Program widget.
- */
+// Widgets.Program
+// ---------------
 
 Widgets.Program = Widgets.Widget.extend({
 
@@ -12,26 +11,18 @@ Widgets.Program = Widgets.Widget.extend({
         }
     },
 
-    onInitUI: function () {
-        this._$name = $('<div/>').addClass('title').css({
-            'line-height': this.computed('svg.height') + 'px'
-        });
-        this._$sidebar.append(this._$name);
-    },
-
     onInitD3: function () {
-        // state is used to display the program's state
-        this.state = this.svg.append('g').attr({class: 'state'}).selectAll('rect');
-
-        // markers is used to display decoration markers
+        this.state = this.svg.append('g').attr({class: 'program state'}).selectAll('rect');
         this.initD3Markers();
     },
 
-    onFrameUpdate: function () {
+    onRender: function () {
+        Widgets.Widget.prototype.onRender.apply(this, arguments);
+
         var self = this;
 
         //
-        // state
+        // Render State
         //
         var state = this.state = this.state.data(
             this.buffer.select(function (d) {
@@ -55,15 +46,7 @@ Widgets.Program = Widgets.Widget.extend({
             height: function (d) {
                 return 0.5*self.computed('svg.height');
             },
-            fill: function (d) {
-                if (d.data.event.state.name === 'disabled') {
-                    return 'orange';
-                } else if (d.data.event.state.name == 'enabled') {
-                    return 'yellow';
-                } else if (d.data.event.state.name == 'invalid') {
-                    return 'grey';
-                }
-            }
+            class: function (d) { return d.data.event.state.name; }
         });
         state.attr({
             x: function (d) {
@@ -78,44 +61,30 @@ Widgets.Program = Widgets.Widget.extend({
             height: function (d) {
                 return 0.5*self.computed('svg.height');
             },
-            fill: function (d) {
-                if (d.data.event.state.name === 'disabled') {
-                    return 'orange';
-                } else if (d.data.event.state.name == 'enabled') {
-                    return 'yellow';
-                } else if (d.data.event.state.name == 'invalid') {
-                    return 'grey';
-                }
-            },
+            class: function (d) { return d.data.event.state.name; },
             rx: 5,
             ry: 5
         });
         state.exit().remove();
 
         //
-        // markers
+        // Render Markers
         //
-        this.updateD3Markers();
+        this.renderD3Markers();
     },
 
-    onRulerFocusUpdate: function (position, timestamp, frame) {
-        // update `aside` position
-        if (position < this.computed('svg.width') / 2) {
-            this._$aside.css({
-                'left': position + this.options.placeholder.sidebar.width + this.options.ruler.width / 2,
-                'right': 'auto'
-            });
-        } else {
-            this._$aside.css({
-                'left': 'auto',
-                'right': this.computed('svg.width') + this.options.ruler.width / 2 - position
-            });
-        }
+    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
+        var state = this.state.data(
+            _.compact([focusedFrame, lastFocusedFrame]),
+            function (d) {
+                return d.timestamp
+            }
+        );
 
-        if (frame && frame.data) {
-            this._$name.text(frame.data.name);
-        }
+        state.classed('focused', function (d) {
+            return d == focusedFrame
+        });
     }
 });
 
-_.extend(Widgets.Program.prototype, Widgets.Mixins.Markers);
+_.extend(Widgets.Program.prototype, Widgets.Mixins.Markers, Widgets.Mixins.Focus);

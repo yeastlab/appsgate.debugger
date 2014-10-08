@@ -1,6 +1,5 @@
-/**
- * Temperature widget.
- */
+// Widgets.Temperature
+// -------------------
 
 Widgets.Temperature = Widgets.Device.extend({
 
@@ -25,7 +24,7 @@ Widgets.Temperature = Widgets.Device.extend({
             Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
         }
 
-        // setup d3 functions
+        // Setup d3 functions
         this.valueFn = function (d) {
             try {
                 if (d.timestamp) {
@@ -43,40 +42,44 @@ Widgets.Temperature = Widgets.Device.extend({
         Widgets.Device.prototype.onInitD3.apply(this, arguments);
 
         this.y = d3.scale.linear()
-            .range([1, this.computed('svg.height')-1]);
+            .range([0, this.computed('svg.height') - 1]);
 
         this.initD3Chart();
     },
 
-    onFrameUpdate: function () {
-        Widgets.Device.prototype.onFrameUpdate.apply(this, arguments);
+    onDestroyD3: function() {
+        Widgets.Device.prototype.onDestroyD3.apply(this, arguments);
+
+        delete this.y;
+        this.destroyD3Chart();
+    },
+
+    onRender: function () {
+        Widgets.Device.prototype.onRender.apply(this, arguments);
 
         var self = this;
 
-        // update domain
         this.y.domain(d3.extent(
             self.buffer.select(function (d) {
                 return ensure(d.data, 'event') && d.data.event.type == 'update'}
             ), self.valueFn)
         );
 
-        this.updateD3Chart();
+        this.renderD3Chart();
     },
 
-    onRulerFocusUpdate: function (position, timestamp, frame) {
+    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
-        if (frame && frame.data) {
-            if (frame.data.event.type == 'update' && frame.data.event.state.status == 2) {
-                this._$picto.attr({class: 'picto'}).text(this.valueFn(frame.data)+'°');
-            } else {
-                // fallback
-                this._$picto.attr({class: 'picto picto-temperature_type'}).text('');
-            }
+        if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {
+            this._$picto.attr({class: 'picto'}).text(this.valueFn(focusedFrame.data)+'°');
         } else {
-            this._$aside.text('');
+            // fallback
+            this._$picto.attr({class: 'picto picto-temperature_type'}).text('');
         }
+
+        this.updateD3ChartFocus(focusedFrame, lastFocusedFrame);
     }
 });
 
-_.extend(Widgets.Temperature.prototype, Widgets.Mixins.Chart);
+_.extend(Widgets.Temperature.prototype, Widgets.Mixins.Chart, Widgets.Mixins.Focus);

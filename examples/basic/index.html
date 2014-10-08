@@ -49,11 +49,26 @@
                 port: '3000'
             });
 
-            var dashboard = new Debugger.Dashboard('#canvas');
+            // setup dashboard
+            var dashboard = window.dashboard = new Debugger.Dashboard('#canvas');
             dashboard.connect(connector);
 
-            var monitor = new Debugger.Monitor();
+            // setup developer monitor
+            var monitor = window.monitor = new Debugger.Monitor();
             monitor.connect(connector);
+
+            // listen to zoom request from dashboard
+            dashboard.on('zoom:request', function (context) {
+                dashboard.requestHistoryTrace(context);
+            });
+
+            // listen to marker click event from dashboard
+            dashboard.on('marker:click', function (decorations, textContent, htmlContent) {
+                alert(textContent);
+            });
+
+            // prompt server for initial history trace
+            dashboard.requestInitialHistoryTrace();
         });
     </script>
     <style type="text/css">
@@ -66,8 +81,8 @@
     </style>
 </head>
 <body>
-    <div class="wrapper">
-        <div id='canvas'></div>
-    </div>
+<div class="wrapper">
+    <div id='canvas'></div>
+</div>
 </body>
 </html>

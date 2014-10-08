@@ -1,6 +1,5 @@
-/**
- * Logger
- */
+// Logger
+// ------
 
 var Logger = Debugger.Logger = (function () {
 
@@ -26,5 +25,6 @@ var Logger = Debugger.Logger = (function () {
     return LoggerWrapper;
 })();
 
-// Define default logger
+// Define default logger.
+// The default logger output to the console.
 Debugger.logger = new Logger(console);

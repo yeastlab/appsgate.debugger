@@ -1,6 +1,5 @@
-/**
- * Timeline widget.
- */
+// Widgets.Timeline
+// ----------------
 
 Widgets.Timeline = Widgets.Widget.extend({
 
@@ -14,17 +13,14 @@ Widgets.Timeline = Widgets.Widget.extend({
     },
 
     onInitUI: function () {
-        var $title = $('<span/>')
-            .addClass('title')
-            .css({
-                'line-height': parseInt(this.options.height) + "px"
-            })
-            .text(this.attributes.name);
+        Widgets.Widget.prototype.onInitUI.apply(this, arguments);
 
-        this._$sidebar.append($title);
+        this._$name.text(this.attributes.name);
     },
 
     onInitD3: function () {
+        Widgets.Widget.prototype.onInitD3.apply(this, arguments);
+
         this.xAxis = d3.svg.axis()
             .scale(this.timescale)
             .orient(this.attributes.orientation);
@@ -34,7 +30,15 @@ Widgets.Timeline = Widgets.Widget.extend({
             .call(this.xAxis);
     },
 
-    onFrameUpdate: function () {
+    onRender: function () {
+        Widgets.Widget.prototype.onRender.apply(this, arguments);
+
         this.xAxisGroup.call(this.xAxis);
+    },
+
+    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
+        // do nothing
     }
 });
+
+_.extend(Widgets.Timeline.prototype, Widgets.Mixins.Focus);

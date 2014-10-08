@@ -1,30 +1,38 @@
 (function (root, factory) {
+    // Setup AppsGate.Debugger appropriately for the environment. Start with AMD.
     if (typeof define === 'function' && define.amd) {
-        // AMD.
-        define(['backbone', 'jquery', 'underscore', 'd3'], function(Backbone, $, _, d3) {
-            return (root.AppsGateDebugger = factory(root, Backbone, $, _, d3));
+        define(['backbone', 'jquery', 'underscore', 'd3', 'exports'], function(Backbone, $, _, d3, exports) {
+            // Export global even in AMD case in case this script is loaded with
+            // others that may still expect a global AppsGateDebugger.
+            return (root.AppsGateDebugger = factory(root, exports, Backbone, $, _, d3));
         });
     } else {
-        // Browser globals
-        root.AppsGateDebugger = factory(root, root.Backbone, root.$, root._, root.d3);
+        // Else, as a browser global.
+        root.AppsGateDebugger = factory(root, {}, root.Backbone, root.$, root._, root.d3);
     }
-}(this, function(root, Backbone, $, _, d3) {
+}(this, function(root, Debugger, Backbone, $, _, d3) {
     'use strict';
 
+    // Initial Setup
+    // -------------
+
+    // Save the previous value of the AppsGateDebugger variable, so that it can be restored later on, if noConflict is used.
     var previousDebugger = root.AppsGateDebugger;
 
-    var Debugger = {};
-
+    // Current version of the library. Keep in sync with package.json.
     Debugger.VERSION = '<%= version %>';
 
+    // Runs AppsGate.Debugger.js in noConflict mode, returning the AppsGateDebugger variable to its previous owner.
+    // Returns a reference to this AppsGateDebugger object.
     Debugger.noConflict = function() {
         root.AppsGateDebugger = previousDebugger;
         return this;
     };
 
-    // borrow Backbone.extend;
+    // Borrow Backbone.extend function.
     Debugger.extend = Backbone.Model.extend;
 
+    // Inline include of SVG file for faster loading.
     // @include ../.tmp/gen/themes/basic/base.svg.js
 
     // @include modules/debugger.helpers.js

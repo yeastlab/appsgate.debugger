@@ -19,12 +19,11 @@ module.exports = function (grunt) {
         pkg: grunt.file.readJSON('package.json'),
         meta: {
             version: '<%= pkg.version %>',
-            debugger_banner: '// AppsGateDebugger (AppsGate.Debugger)\n' +
-                '// ----------------------------------\n' +
-                '// v<%= pkg.version %>\n' +
+            debugger_banner: '//     AppsGate.Debugger v<%= pkg.version %>\n' +
+                '\n' +
                 '//\n' +
-                '// Copyright (c)<%= grunt.template.today("yyyy") %> Rémi Barraquand.\n' +
-                '// Distributed under ISC license\n' +
+                '//     Copyright (c)<%= grunt.template.today("yyyy") %> Rémi Barraquand.\n' +
+                '//     Distributed under ISC license\n' +
                 '\n'
         },
 
@@ -37,6 +36,15 @@ module.exports = function (grunt) {
             install: {
                 options: {
                     copy: false
+                }
+            }
+        },
+
+        docco: {
+            debugger: {
+                src: ['lib/appsgate.debugger.js'],
+                options: {
+                    output: 'docs/'
                 }
             }
         },
@@ -219,12 +227,16 @@ module.exports = function (grunt) {
                 files: ['Gruntfile.js']
             },
             debugger : {
-                files : ['src/*.js', 'src/**/*.js'],
-                tasks : ['preprocess', 'template']
+                files : ['Gruntfile.js', 'src/*.js', 'src/**/*.js'],
+                tasks : ['build']
             },
             compass: {
                 files: ['<%= compass.options.sassDir %>/{,**/}*.{scss,sass}'],
                 tasks: ['compass']
+            },
+            docco: {
+                files: ['lib/appsgate.debugger.js'],
+                tasks: ['docco']
             },
             livereload: {
                 options: {

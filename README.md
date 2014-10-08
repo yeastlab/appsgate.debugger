@@ -52,6 +52,14 @@ Then to build AppsGate.Debugger do the following:
  
     $ grunt build
 
+### Documentation
+
+The documentation is generated from the source code using [docco].
+To build the document simply run the following:
+
+    $ grunt docco
+
+
 References
 ----------
 
@@ -62,4 +70,5 @@ References
 [nodejs]:       http://nodejs.org/  "NodeJS"
 [grunt-cli]:    https://www.npmjs.org/package/grunt-cli "Grunt-CLI"
 [requirejs]:    http://www.requirejs.org/   "RequireJS"
+[docco]:        http://jashkenas.github.io/docco/ "Docco"
 

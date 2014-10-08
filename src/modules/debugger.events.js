@@ -1,6 +1,4 @@
-/**
- * Event aggregator.
- */
+// Events.
 
 Debugger.Events = (function (Backbone, _) {
     'use strict';

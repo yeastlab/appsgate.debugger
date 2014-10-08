@@ -1,6 +1,6 @@
-/**
- * Contact widget.
- */
+// Widgets.Contact
+// ---------------
+
 
 Widgets.Contact = Widgets.Device.extend({
 
@@ -13,20 +13,18 @@ Widgets.Contact = Widgets.Device.extend({
     },
 
     onBeforeInitD3: function () {
-        if (_.isFunction(Widgets.Device.prototype.onBeforeInitD3)) {
-            Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
-        }
+        Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
 
-        // setup d3 functions
+        // Setup d3 functions
         this.valueFn = function (d) {
             try {
                 if (d.timestamp) {
-                    return d.data.event.state.value;
+                    return parseBoolean(d.data.event.state.value);
                 } else {
-                    return d.event.state.value;
+                    return parseBoolean(d.event.state.value);
                 }
             } catch (e) {
-                return 'false';
+                return false;
             }
         };
     },
@@ -35,27 +33,36 @@ Widgets.Contact = Widgets.Device.extend({
         Widgets.Device.prototype.onInitD3.apply(this, arguments);
 
         this.y = d3.scale.ordinal()
-            .range([0, this.computed('svg.height')-1])
-            .domain(['false', 'true']);
+            .range([0, this.computed('svg.height') - 1])
+            .domain([false, true]);
 
         this.initD3Chart();
     },
 
-    onFrameUpdate: function () {
-        Widgets.Device.prototype.onFrameUpdate.apply(this, arguments);
+    onDestroyD3: function() {
+        Widgets.Device.prototype.onDestroyD3.apply(this, arguments);
 
-        this.updateD3Chart();
+        delete this.y;
+        this.destroyD3Chart();
     },
 
-    onRulerFocusUpdate: function (position, timestamp, frame) {
+    onRender: function () {
+        Widgets.Device.prototype.onRender.apply(this, arguments);
+
+        this.renderD3Chart();
+    },
+
+    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
-        if (frame && frame.data && frame.data.event.type == 'update') {
-            this._$picto.attr({class: 'picto picto-'+frame.data.event.picto});
+        if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {
+            this._$picto.attr({class: 'picto picto-'+focusedFrame.data.event.picto});
         } else {
             // fallback
-            this._$picto.attr({class: 'picto picto-contact_type'}).text('');
+            this._$picto.attr({class: 'picto picto-contact_type'});
         }
+
+        this.updateD3ChartFocus(focusedFrame, lastFocusedFrame);
     }
 });
 
