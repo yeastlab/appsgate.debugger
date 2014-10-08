@@ -1,6 +1,5 @@
-/**
- * Temperature widget.
- */
+// Widgets.Temperature
+// -------------------
 
 Widgets.Temperature = Widgets.Device.extend({
 
@@ -25,7 +24,7 @@ Widgets.Temperature = Widgets.Device.extend({
             Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
         }
 
-        // setup d3 functions
+        // Setup d3 functions
         this.valueFn = function (d) {
             try {
                 if (d.timestamp) {
@@ -60,7 +59,6 @@ Widgets.Temperature = Widgets.Device.extend({
 
         var self = this;
 
-        // update domain
         this.y.domain(d3.extent(
             self.buffer.select(function (d) {
                 return ensure(d.data, 'event') && d.data.event.type == 'update'}

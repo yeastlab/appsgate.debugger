@@ -1,6 +1,5 @@
-/**
- * Contact widget.
- */
+// Widgets.ColorLight
+// ------------------
 
 Widgets.ColorLight = Widgets.Device.extend({
 
@@ -15,7 +14,7 @@ Widgets.ColorLight = Widgets.Device.extend({
     onBeforeInitD3: function () {
         Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
 
-        // setup d3 value function
+        // Setup d3 value function
         this.valueFn = function (d) {
             try {
                 if (d.timestamp) {
@@ -28,7 +27,7 @@ Widgets.ColorLight = Widgets.Device.extend({
             }
         };
 
-        // setup d3 color function
+        // Setup d3 color function
         this.colorFn = function (d) {
             try {
                 var state = d.timestamp ? d.data.event.state : d.event.state;

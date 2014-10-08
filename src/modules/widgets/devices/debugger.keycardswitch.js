@@ -1,6 +1,6 @@
-/**
- * Contact widget.
- */
+// Widgets.KeycardSwitch
+// ---------------------
+
 
 Widgets.KeycardSwitch = Widgets.Device.extend({
 
@@ -15,7 +15,7 @@ Widgets.KeycardSwitch = Widgets.Device.extend({
     onBeforeInitD3: function () {
         Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
 
-        // setup d3 functions
+        // Setup d3 functions
         this.valueFn = function (d) {
             try {
                 if (d.timestamp) {

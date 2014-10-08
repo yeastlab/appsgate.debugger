@@ -1,6 +1,5 @@
-/**
- * Timeline widget.
- */
+// Widgets.Timeline
+// ----------------
 
 Widgets.Timeline = Widgets.Widget.extend({
 
@@ -13,14 +12,12 @@ Widgets.Timeline = Widgets.Widget.extend({
         }
     },
 
-    // @override
     onInitUI: function () {
         Widgets.Widget.prototype.onInitUI.apply(this, arguments);
 
         this._$name.text(this.attributes.name);
     },
 
-    // @override
     onInitD3: function () {
         Widgets.Widget.prototype.onInitD3.apply(this, arguments);
 
@@ -33,14 +30,12 @@ Widgets.Timeline = Widgets.Widget.extend({
             .call(this.xAxis);
     },
 
-    // @override
     onRender: function () {
         Widgets.Widget.prototype.onRender.apply(this, arguments);
 
         this.xAxisGroup.call(this.xAxis);
     },
 
-    // @override
     onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
         // do nothing
     }

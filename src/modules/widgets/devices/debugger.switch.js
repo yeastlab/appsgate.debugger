@@ -1,6 +1,6 @@
-/**
- * Switch widget.
- */
+// Widgets.Switch
+// --------------
+
 
 Widgets.Switch = Widgets.Device.extend({
 
@@ -39,7 +39,7 @@ Widgets.Switch = Widgets.Device.extend({
         var self = this;
 
         //
-        // spikes
+        // Render spikes
         //
         var spikes = this.spikes = this.spikes.data(
             this.buffer.select(function (d) {
@@ -71,7 +71,7 @@ Widgets.Switch = Widgets.Device.extend({
         spikes.exit().remove();
 
         //
-        // borders
+        // Render borders
         //
         var line = d3.svg.line()
             .x(function (d) {
@@ -120,11 +120,9 @@ Widgets.Switch = Widgets.Device.extend({
         if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {
             this._$picto.attr({class: 'picto picto-' + focusedFrame.data.event.picto});
         } else {
-            // fallback
             this._$picto.attr({class: 'picto picto-switch_type'});
         }
 
-        // update focus
         var spikes = this.spikes.data(
                 _.compact([focusedFrame, lastFocusedFrame]),
             function (d) {

@@ -1,6 +1,5 @@
-/**
- * Focusline widget.
- */
+// Widgets.Focusline
+// -----------------
 
 Widgets.Focusline = Widgets.Widget.extend({
 
@@ -16,7 +15,7 @@ Widgets.Focusline = Widgets.Widget.extend({
         this.y = d3.scale.linear()
             .range([0, this.computed('svg.height')-1]);
 
-        // define a brush for focus selection
+        // Define a brush for focus selection.
         this.brush = d3.svg.brush().x(this.timescale)
             .on('brush', function () {
                 self.triggerMethod.apply(self, ['focus:change'].concat([self.brush]));
@@ -27,10 +26,10 @@ Widgets.Focusline = Widgets.Widget.extend({
                 self.triggerMethod.apply(self, ['brush:resize'].concat([width]));
             });
 
-        // define chart for drawing events
+        // Define chart for drawing events.
         this.chart = this.svg.append('g').attr({class: 'focusline'}).selectAll('rect');
 
-        // define context for displaying focused area
+        // Define context for displaying focused area.
         this.context = this.svg.append("g").attr("class", "context").append("g")
             .attr("class", "x brush")
             .call(this.brush)

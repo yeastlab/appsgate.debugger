@@ -1,6 +1,5 @@
-/**
- * Base class for Device widget.
- */
+// Widgets.Device
+// --------------
 
 Widgets.Device = Widgets.Widget.extend({
 
@@ -17,20 +16,19 @@ Widgets.Device = Widgets.Widget.extend({
     onInitD3: function () {
         Widgets.Widget.prototype.onInitD3.apply(this, arguments);
 
-        // status is used to display connection/disconnection status
+        // Status is used to display connection/disconnection status
         this.status = this.svg.append('g').attr({class: 'status'}).selectAll('line');
 
-        // markers is used to display decoration markers
         this.initD3Markers();
     },
 
     onDestroyD3: function() {
         Widgets.Widget.prototype.onDestroyD3.apply(this, arguments);
 
-        // destroy status
+        // Destroy status
         this.status.remove(); delete this.status;
 
-        // destroy markers
+        // Destroy markers
         this.destroyD3Markers();
     },
 
@@ -40,7 +38,7 @@ Widgets.Device = Widgets.Widget.extend({
         var self = this;
 
         //
-        // status
+        // Render status
         //
         var status = this.status = this.status.data(
             this.buffer.select(function (d) {
@@ -80,14 +78,13 @@ Widgets.Device = Widgets.Widget.extend({
         });
         status.exit().remove();
 
-        // Markers
+        // Render markers
         this.renderD3Markers();
     },
 
     onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
         Widgets.Widget.prototype.onRulerFocusUpdate.apply(this, arguments);
 
-        // update focus
         var status = this.status.data(
             _.compact([focusedFrame, lastFocusedFrame]),
             function (d) {
@@ -103,7 +100,6 @@ Widgets.Device = Widgets.Widget.extend({
 
 _.extend(Widgets.Device.prototype, Widgets.Mixins.Markers, Widgets.Mixins.Focus);
 
-// Specific devices
 // @include devices/debugger.temperature.js
 // @include devices/debugger.switch.js
 // @include devices/debugger.contact.js

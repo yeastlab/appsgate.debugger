@@ -1,6 +1,5 @@
-/**
- * Base class for Program widget.
- */
+// Widgets.Program
+// ---------------
 
 Widgets.Program = Widgets.Widget.extend({
 
@@ -13,10 +12,7 @@ Widgets.Program = Widgets.Widget.extend({
     },
 
     onInitD3: function () {
-        // state is used to display the program's state
         this.state = this.svg.append('g').attr({class: 'program state'}).selectAll('rect');
-
-        // markers is used to display decoration markers
         this.initD3Markers();
     },
 
@@ -26,7 +22,7 @@ Widgets.Program = Widgets.Widget.extend({
         var self = this;
 
         //
-        // state
+        // Render State
         //
         var state = this.state = this.state.data(
             this.buffer.select(function (d) {
@@ -72,13 +68,12 @@ Widgets.Program = Widgets.Widget.extend({
         state.exit().remove();
 
         //
-        // markers
+        // Render Markers
         //
         this.renderD3Markers();
     },
 
     onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
-        // update state
         var state = this.state.data(
             _.compact([focusedFrame, lastFocusedFrame]),
             function (d) {

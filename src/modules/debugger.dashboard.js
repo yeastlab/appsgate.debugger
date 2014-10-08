@@ -1,8 +1,9 @@
-/**
- * Dashboard
- */
+// Dashboard
+// ---------
 
+// AppsGate **Dashboard** is the central element of the AppsGate Debugger.
 
+// Create a new Dashboard with the specified `options` and append it to the given `selector`.
 Debugger.Dashboard = function (selector, options) {
     // check if selector is given
     if (!selector) {
@@ -24,11 +25,11 @@ Debugger.Dashboard = function (selector, options) {
     }
 };
 
+// Attach all inheritable methods to the Dashboard prototype.
 _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
-    initialize: function (selector, options) {
-        var self = this;
 
-        // set default options in case some is omitted
+    // Initialize the dashboard.
+    initialize: function (selector, options) {
         this.options = defaultsDeep({}, options, {
             width: 960,
             widget: {
@@ -64,46 +65,37 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         return this.$el.find(selector);
     },
 
-    // import the `triggerMethod` to trigger events with corresponding
+    // Import the `triggerMethod` to trigger events with corresponding
     // methods if the method exists
     triggerMethod: Debugger.triggerMethod,
 
-    /**
-     * Connect the dashboard to a `connector`.
-     *
-     * @param connector Connector to connect this dashboard with.
-     * @returns {Debugger.Dashboard}
-     */
+    //Connect the dashboard to a `connector`.
     connect: function (connector) {
         if (this.connector) {
-            // unregister if already registered.
+            // Unregister if already registered.
             Debugger.logger.warn("Dashboad connection reinitialized: the dashboad was already connected to a connector.");
             this.connector.off('packet:received', this.update);
         }
 
-        // register to *connector* events
+        // Register to `connector` events
         this.connector = connector;
         this.connector.on('packet:received', this.onPacketReceived);
 
         return this;
     },
 
-    /**
-     * Update dashboard with new data. This is generally called by the connected
-     * connector when new data are received.
-     *
-     * @param packet
-     */
+    // Update dashboard with new data. This is generally called by the connected
+    // connector when new data are received.
     onPacketReceived: function(packet) {
         try {
             if (packet.request) {
                 var updateFocusLine = false;
 
                 if (packet.eventline) {
-                    // reset the dashboard on each request
+                    // Reset the dashboard on each request.
                     this._reset();
 
-                    // update focusline with received data
+                    // Update focusline with received data.
                     // note: here we prevent rendering except for the last frame
                     var lastFrame = packet.eventline.pop();
 
@@ -115,17 +107,17 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                         this._update_focusline_with_frame(lastFrame);
                     }
                 } else {
-                    // reset the dashboard on each request
-                    // this will not clean the focusline
+                    // Reset the dashboard on each request
+                    // this will not clean the focusline.
                     this._clean();
                 }
 
-                // set the default group demux
+                // Set the default group demux.
                 if (packet.groups) {
                     this._demux = this._create_demux({grouping: packet.groups});
                 }
 
-                // update widgets with received data
+                // Update widgets with received data.
                 var lastFrame = packet.data.pop();
 
                 _.each(packet.data, function (frame) {
@@ -136,13 +128,13 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     this._update_all_with_frame(lastFrame);
                 }
 
-                // update widgets according to ruler
-                //this._notifyWidgetsOfRulerPosition();
+                // Update widgets according to ruler
+                this._notifyWidgetsOfRulerPosition();
             } else {
-                // this is a streaming packet
+                // This is a streaming packet
                 var data = packet.data;
                 if (data instanceof Array) {
-                    // update widgets with received data
+                    // Update widgets with received data.
                     // note: here we prevent rendering except for the last frame
                     var lastFrame = data.pop();
 
@@ -160,7 +152,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     this._update_all_with_frame(data);
                 }
 
-                // update widgets according to ruler
+                // Update widgets according to ruler.
                 this._notifyWidgetsOfRulerPosition();
             }
         } catch (e) {
@@ -172,11 +164,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }
     },
 
-    /**
-     * Request initial history trace.
-     *
-     * @param params
-     */
+    // Request initial history trace.
     requestInitialHistoryTrace: function(params) {
         params = _.defaults({}, params, {
             order: 'type'
@@ -192,11 +180,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }
     },
 
-    /**
-     * Request history trace.
-     *
-     * @param params
-     */
+    // Request history trace.
     requestHistoryTrace: function(params) {
         params = _.defaults({}, params, {
             order: 'type',
@@ -213,45 +197,38 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }
     },
 
-    /**
-     * Request live trace.
-     */
+    //  Request live trace.
     requestLiveTrace: function() {
         if (this.connector) {
             this.connector.requestLiveTrace();
         }
     },
 
-    // Private API
+    // **Private API**
 
-    /**
-     * Initialize the UI within the container designated by the `selector`.
-     *
-     * @param selector Selector of the element in which to initialize the UI.
-     * @private
-     */
+    // Initialize the UI within the container designated by the `selector`.
     _init_ui: function (selector) {
         var self = this;
 
-        // create the ruler
+        // Create the ruler.
         this._$ruler = $('<div class="rule"><div class="line"></div></div>')
             .css({
                 'width': this.options.ruler.width,
                 'margin-left': this.options.widget.placeholder.sidebar.width
             });
 
-        // create the footer
+        // Create the footer.
         this._$footer = $('<footer></footer>');
 
-        // create the widgets holder
+        // Create the widgets holder
         this._$container = $('<div class="container"></div>');
 
-        // setup the dashboard
+        // Setup the dashboard.
         this.$el = $(selector).css({
             width: parseInt(this.options.width) + "px"
         }).addClass('dashboard').append(this._$ruler, this._$container, this._$footer);
 
-        // make the ruler draggable
+        // Make the ruler draggable.
         this._$ruler.draggable({
             axis: 'x',
             containment: 'parent',
@@ -266,86 +243,69 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         });
     },
 
-    /**
-     * Initialize D3
-     *
-     * @private
-     */
+    // Initialize D3
     _init_d3: function () {
-        // define main timescale
+        // Define main timescale.
         this.timescale = d3.time.scale().range([0, this.options.with]);
 
-        // create focusline
+        // Create focusline.
         this._focusline = new Debugger.Widgets.Focusline({id: 'default'}, {
             height: 20,
             placeholder: this.options.widget.placeholder
         });
 
-        // bind dashboard to its events
+        // Bind dashboard to its events.
         this.listenTo(this._focusline, 'focus:change', this._onFocusChange);
         this.listenTo(this._focusline, 'brush:resize', this._onBrushResize);
 
-        // attach it to the dashboard
+        // Attach it to the dashboard.
         this._attach_widget(this._focusline, this._$footer);
     },
 
-    /**
-     * Reset dashboard to its initial state.
-     * @private
-     */
+    // Reset dashboard to its initial state.
     _reset: function() {
-        // clean groups, devices, programs
+        // Clean groups, devices, programs.
         this._clean();
 
         this._devices = {};  // reset devices
         this._programs = {}; // reset programs
 
-        // reset focusline and domain
+        // Reset focusline and domain.
         this._focusline.reset();
         this._domain = [_.now(), 0];
     },
 
-    /**
-     * Clean dashboard. Cleaning the dashboard will (a) clean and detach all widgets but
-     * the focusline and (b) destroy all groups.
-     * @private
-     */
+    // Clean dashboard. Cleaning the dashboard will (a) clean and detach all widgets but
+    // the focusline and (b) destroy all groups.
     _clean: function() {
-        // detach devices
+        // Detach devices.
         _.forEach(this._devices, function(widget) {
             this._detach_widget(widget);
         }, this);
 
-        // detach programs
+        // Detach programs.
         _.forEach(this._programs, function(widget) {
             this._detach_widget(widget);
         }, this);
 
-        // remove groups
+        // Remove groups.
         _.forEach(this._groups, function(group) {
             this._remove_group(group);
         }, this);
 
-        // reset groups
+        // Reset groups.
         this._groups = {};
 
-        // set default group demultiplexer
+        // Set default group demultiplexer (demux).
         this._demux = this._create_demux({ func: 'type' });
     },
 
-    /**
-     * Focus change callback.
-     * @private
-     */
+    // Focus change callback.
     _onFocusChange: function() {
         this._notifyWidgetsOnRulerFocusChanged(this._$ruler.position());
     },
 
-    /**
-     * Brush resize callback.
-     * @param width Width of the resized brush.
-     * @private
-     */
+    // Brush resize callback.
     _onBrushResize: function(width) {
         this.triggerMethod.apply(this, ['zoom:request'].concat([{
             screenResolution: this._focusline.computed('svg.width'),
@@ -354,11 +314,8 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }]));
     },
 
-    /**
-     * Widget marker click callback.
-     * @param decorations Array of decorations associated to the marker.
-     * @private
-     */
+    // Widget marker click callback.
+    // `decorations` is an array of decorations associated to the marker.
     _onWidgetMarkerClick: function(decorations) {
         var textContent = '';
         var htmlContent = '';
@@ -377,42 +334,26 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         this.triggerMethod.apply(this, ['marker:click'].concat([decorations, textContent, htmlContent]));
     },
 
-    /**
-     * Notify widgets of the position of the ruler.
-     *
-     * @private
-     */
+    // Notify widgets of the position of the ruler.
     _notifyWidgetsOfRulerPosition: function() {
         this._notifyWidgetsOnRulerFocusChanged(this._$ruler.position());
     },
 
-    /**
-     * Notify widgets that the ruler is at some `position`.
-     *
-     * @param position Position of the ruler.
-     * @param direction Direction of the ruler, can be 'left' or 'right'
-     * @private
-     */
+    // Notify widgets that the ruler is at some `position` and dragged into some `direction`.
+    // Direction can be 'left' or 'right'
     _notifyWidgetsOnRulerFocusChanged: function(position, direction) {
-        // offset = parent.offset.left - ruler.width/2
+        /* offset = parent.offset.left - ruler.width/2 */
         var offset = this.$el.offset().left - this.options.ruler.width / 2;
-        // invoke rulerFocusChanged on all devices & programs
         _.invoke(this._devices, 'rulerFocusChanged', position.left - offset, direction || 'left');
         _.invoke(this._programs, 'rulerFocusChanged', position.left - offset, direction || 'left');
     },
 
-    /**
-     * Update focusline.
-     *
-     * @param frame Data frame to update the focusline with.
-     * @param options
-     * @private
-     */
+    // Update focusline.
     _update_focusline_with_frame: function(frame, options) {
-        // update domain
+        // Update domain.
         this._domain = [Math.min(this._domain[0], frame.timestamp), Math.max(this._domain[1], frame.timestamp)];
 
-        // update focusline
+        // Update focusline.
         this._focusline.update({
             timestamp: frame.timestamp,
             frame: {
@@ -421,40 +362,35 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }, this._domain, options);
     },
 
-    /**
-     * Update all widgets attached to the dashboard according to some `frame` data.
-     *
-     * @param frame Data frame to update widgets with.
-     * @private
-     */
+    // Update all widgets attached to the dashboard according to some `frame` data.
     _update_all_with_frame: function (frame, options) {
-        // update focus
+        // Update focus
         this._focus = this._focusline.brush.empty()? this._domain : this._focusline.brush.extent();
 
         //
-        // Devices
+        // Update *Devices*.
         //
 
         var updated_device_ids = [];
 
         // update devices listed in frame
         _.forEach(frame.devices, function (update) {
-            // create device if it does not exit yet
+            // Create device if it does not exit yet.
             if (!this._has_widget('device', update.id)) {
                 this._create_widget('device', update);
             }
 
-            // update it
+            // Update it.
             this._update_one_with_frame('device', update.id, {
                 timestamp: frame.timestamp,
                 frame: update
             }, options);
 
-            // mark as updated
+            // Mark as updated.
             updated_device_ids.push(update.id);
         }, this);
 
-        // update all other devices (timestamp only)
+        // Update all other devices (timestamp only).
         _.forEach(this._devices, function (device, device_id) {
             if (!_.contains(updated_device_ids, device_id)) {
                 this._update_one_with_frame('device', device_id, {timestamp: frame.timestamp}, options);
@@ -462,29 +398,29 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }, this);
 
         //
-        // Programs
+        // Update *Programs*.
         //
 
         var updated_program_ids = [];
 
-        // update devices listed in frame
+        // Update devices listed in frame.
         _.forEach(frame.programs, function (update) {
-            // create program if it does not exit yet
+            // Create program if it does not exit yet.
             if (!this._has_widget('program', update.id)) {
                 this._create_widget('program', update);
             }
 
-            // update it
+            // Update it.
             this._update_one_with_frame('program', update.id, {
                 timestamp: frame.timestamp,
                 frame: update
             }, options);
 
-            // mark as updated
+            // Mark as updated.
             updated_program_ids.push(update.id);
         }, this);
 
-        // update all other programs (timestamp only)
+        // Update all other programs (timestamp only).
         _.forEach(this._programs, function (program, program_id) {
             if (!_.contains(updated_program_ids, program_id)) {
                 this._update_one_with_frame('program', program_id, {timestamp: frame.timestamp}, options);
@@ -492,7 +428,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }, this);
 
         //
-        // Groups
+        // Update *Groups*/
         //
         _.forEach(this._groups, function (group) {
            group.timeline.update({
@@ -501,19 +437,12 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }, this);
     },
 
-    /**
-     * Update a `what` widget if id `id` according to some `frame` data.
-     *
-     * @param what Kind of widget to update (e.g. 'program', 'device')
-     * @param id Id of the widget to update
-     * @param frame Data frame to update the widget with.
-     * @private
-     */
+    // Update a `what` (e.g. 'program', 'device') widget with id `id` according to some `frame` data.
     _update_one_with_frame: function (what, id, frame, options) {
         if (this._has_widget(what, id)) {
             var widget = what === 'device' ? this._devices[id] : this._programs[id];
 
-            // attach the widget to its group if not attached
+            // Attach the widget to its group if not attached
             if (widget.isDetached()) {
                 this._attach_widget_to_group(widget);
             }
@@ -522,14 +451,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }
     },
 
-    /**
-     * Check whether a `what` widget with id `id` exists.
-     *
-     * @param what Kind of widget to check (e.g. 'program', 'device')
-     * @param id Id of the widget to check
-     * @returns {boolean} true if it exists, false otherwise.
-     * @private
-     */
+    // Check whether a `what` widget with id `id` exists.
     _has_widget: function (what, id) {
         switch (what) {
             case 'device':
@@ -541,12 +463,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }
     },
 
-    /**
-     * Create a group demultiplexer function from given `attributes`.
-     *
-     * @param attributes
-     * @private
-     */
+    // Create a group demultiplexer function from given `attributes`.
     _create_demux: function(attributes) {
         if (attributes && attributes.func) {
             switch (attributes.func) {
@@ -580,14 +497,9 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }
     },
 
-    /**
-     * Create a new group with given `attributes`.
-     *
-     * @param attributes
-     * @private
-     */
+    // Create a new group with given `attributes`.
     _create_group: function(attributes) {
-        // widget options
+        // Widget options.
         var options = {
             width: this.options.width,
             height: this.options.group.height,
@@ -596,14 +508,14 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             ruler: this.options.ruler
         };
 
-        // create timeline for the group
+        // Create timeline for the group.
         var timeline = new Debugger.Widgets.Timeline({
             id: _.uniqueId('timeline'),
             name: attributes.name,
             orientation: 'bottom'
         }, options);
 
-        // bind to focusline
+        // Bind to focusline.
         if (_.isFunction(timeline.onFocusChange)) {
             timeline.listenTo(this._focusline, 'focus:change', timeline.onFocusChange);
         }
@@ -616,13 +528,13 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             .append('<header/>')
             .append('<div class="container"></div>');
 
-        // attach group to the dashboard
+        // Attach group to the dashboard.
         this._$container.append(group);
 
-        // attach timeline to the group
+        // Attach timeline to the group.
         this._attach_widget(timeline, group.find('header')[0]);
 
-        // return group object
+        // Return group object.
         return {
             $el: group,
             $container: group.find('.container')[0],
@@ -630,36 +542,25 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         };
     },
 
-    /**
-     * Remove a group from the dashboard.
-     * @param group
-     * @private
-     */
+    // Remove a group from the dashboard.
     _remove_group: function(group) {
-        // detach timeline
+        // Detach timeline.
         this._detach_widget(group.timeline);
 
-        // remove the group $el
+        // Remove the group $el.
         group.$el.remove();
 
-        // delete group
+        // Delete group.
         delete group.$el;
         delete group.$container;
         delete group.timeline;
     },
 
-    /**
-     * Create a new `what` widget with given `attributes`.
-     *
-     * @param what Kind of widget to check (e.g. 'program', 'device')
-     * @param attributes
-     * @returns {object} The widget created.
-     * @private
-     */
+    // Create a new `what` widget with given `attributes`.
     _create_widget: function (what, attributes) {
         var widget = undefined;
 
-        // widget options
+        // Define widget options.
         var options = {
             width: this.options.width,
             height: this.options.widget.height,
@@ -715,7 +616,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }
 
         if (widget) {
-            // keep track of new created widget
+            // Keep track of new created widget.
             switch (what) {
                 case 'device':
                     this._devices[attributes.id] = widget;
@@ -725,15 +626,15 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     break;
             }
 
-            // bind to focusline
+            // Bind to focusline.
             if (_.isFunction(widget.onFocusChange)) {
                 widget.listenTo(this._focusline, 'focus:change', widget.onFocusChange);
             }
 
-            // bind dashboard to widget events
+            // Bind dashboard to widget events.
             this.listenTo(widget, 'marker:click', this._onWidgetMarkerClick);
 
-            // find the group to which it belongs
+            // Find and attach it to the group to which it belongs.
             var groupName = this._demux(attributes);
             this._attach_widget_to_group(widget);
         } else {
@@ -743,67 +644,47 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         return widget;
     },
 
-    /**
-     * Attach a widget to a group within this dashboard.
-     * If the group if not created then it creates the group first.
-     *
-     * @param widget Widget to attach
-     * @param group (optional) Name of the group
-     * @private
-     */
+    // Attach a widget to a group within this dashboard.
+    // If the group if not created then it creates the group first.
     _attach_widget_to_group: function(widget, group) {
-        // if group is not provided then find it from widget attributes
+        // If group is not provided then find it from widget attributes.
         if (_.isUndefined(group)) {
             group = this._demux(widget.attributes);
         }
 
-        // if group is not created then create it
+        // If group is not created then create it.
         if (_.isUndefined(this._groups[group])) {
             this._groups[group] = this._create_group({
                 name: group
             });
         }
 
-        // attach it to the group in the DOM
+        // Attach it to the group in the DOM.
         this._attach_widget(widget, this._groups[group].$container);
     },
 
-    /**
-     * Attach a widget to a target element within this dashboard.
-     * If multiple elements match the target then the widget is appended to the first found.
-     *
-     * @param widget
-     * @param target
-     * @private
-     */
+    // Attach a widget to a target element within this dashboard.
+    // If multiple elements match the target then the widget is appended to the first found.
     _attach_widget: function (widget, target) {
         if (this.$(widget.el).length > 0) {
             throwError("Widget #{widget} already attached to dashboard.", { widget: widget});
         }
 
-        // attach
         if (target) {
             this.$(target).first().append(widget.$el);
         } else {
             this._$container.append(widget.$el);
         }
 
-        // notify
         this.triggerMethod.apply(widget, ['attached'].concat(this.$el));
     },
 
-    /**
-     * Detach a widget from this dashboard.
-     * @param widget
-     * @private
-     */
+    // Detach a widget from this dashboard.
     _detach_widget: function(widget) {
         var parent = widget.$el.parent();
 
-        // notify
         this.triggerMethod.apply(widget, ['detached'].concat(parent));
 
-        // detach
         widget.$el.remove();
     }
 });
