@@ -33,6 +33,9 @@ Widgets.Focusline = Widgets.Widget.extend({
             .scale(this.timescale)
             .tickSize(this.options.theme.axis.tick.height)
             .orient(this.attributes.orientation);
+        if( this.attributes.timeFormat) {
+            this.xAxis.tickFormat(this.attributes.timeFormat);
+        }
 
         this.xAxisGroup = this.svg.append("g")
             .attr({

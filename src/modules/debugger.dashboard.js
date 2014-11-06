@@ -16,6 +16,11 @@ Debugger.Dashboard = function (selector, options) {
     this._devices = {};
     this._programs = {};
 
+    // Extract d3 settings from options
+    if (options) {
+        this._d3_settings = options.d3; delete options.d3;
+    }
+
     // keep track of time domain, this is required when adding dynamically new
     // devices or programs in order to sync their timescale.
     this._domain = [_.now(), 0];
@@ -224,6 +229,16 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         // Define main timescale.
         this.timescale = d3.time.scale().range([0, this.options.theme.dashboard.width]);
 
+        // Setup local and override d3 time format.
+        if (this._d3_settings && this._d3_settings.locale) {
+            this._d3_locale = d3.locale(this._d3_settings.locale);
+            d3.time.format = this._d3_locale.timeFormat;
+        }
+
+        if (this._d3_settings && this._d3_settings.timeFormatMulti) {
+            this._d3_timeFormatMulti = d3.time.format.multi(this._d3_settings.timeFormatMulti);
+        }
+
         // Setup focusline specific options.
         var focusline_options = defaultsDeep({
                 theme: {
@@ -256,7 +271,8 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         // Setup focusline attributes
         var focusline_attributes = {
             id: 'default',
-            orientation: 'bottom'
+            orientation: 'bottom',
+            timeFormat: this._d3_timeFormatMulti
         };
 
         // Create focusline.
@@ -574,7 +590,8 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         var timeline_attributes = {
             id: _.uniqueId('timeline'),
             name: attributes.name,
-            orientation: 'top'
+            orientation: 'top',
+            timeFormat: this._d3_timeFormatMulti
         };
 
         // Create timeline for the group.

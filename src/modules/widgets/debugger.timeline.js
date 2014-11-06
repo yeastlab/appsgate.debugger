@@ -24,6 +24,9 @@ Widgets.Timeline = Widgets.Widget.extend({
         this.xAxis = d3.svg.axis()
             .scale(this.timescale)
             .orient(this.attributes.orientation);
+        if( this.attributes.timeFormat) {
+            this.xAxis.tickFormat(this.attributes.timeFormat);
+        }
 
         this.xAxisGroup = this.svg.append("g")
             .attr({
