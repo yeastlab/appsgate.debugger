@@ -1,0 +1,248 @@
+{
+    "font": {
+        "color": "rgba(76, 76, 76, 1)"
+    },
+    "dashboard": {
+        "width": "960px",
+        "widget": {
+            "height": "30px",
+            "margin": {
+                "top": "0px",
+                "left": "0px",
+                "bottom": "0px",
+                "right": "0px"
+            }
+        },
+        "group": {
+            "height": "30px",
+            "margin": {
+                "top": "20px",
+                "left": "0px",
+                "bottom": "0px",
+                "right": "0px"
+            },
+            "header": {
+                "fill": {
+                    "color": "transparent"
+                }
+            },
+            "container": {
+                "padding": {
+                    "top": "10px",
+                    "bottom": "10px"
+                },
+                "margin": {
+                    "top": "30px",
+                    "bottom": "10px"
+                }
+            }
+        },
+        "sidebar": {
+            "width": "200px"
+        },
+        "aside": {
+            "padding": {
+                "left": "5px",
+                "right": "5px"
+            }
+        }
+    },
+    "element": {
+        "odd": {
+            "fill": {
+                "color": "#f6f6f6"
+            }
+        },
+        "even": {
+            "fill": {
+                "color": "#fafafa"
+            }
+        },
+        "active": {
+            "opacity": "100%"
+        },
+        "inactive": {
+            "opacity": "10%"
+        },
+        "title": {
+            "padding": {
+                "left": "10px"
+            }
+        }
+    },
+    "pictogram": {
+        "scale": 1.2,
+        "dimension": {
+            "height": "10px"
+        }
+    },
+    "device": {
+        "state": {
+            "border": {
+                "width": "2px",
+                "color": "rgba(154, 207, 7, 0.8)",
+                "focused": {
+                    "color": "rgba(154, 207, 7, 1)"
+                }
+            },
+            "fill": {
+                "color": "rgba(154, 207, 7, 0.2)"
+            },
+            "focused": {
+                "fill": {
+                    "color": "rgba(154, 207, 7, 0.5)"
+                }
+            }
+        }
+    },
+    "program": {
+        "state": {
+            "height": "15px",
+            "radius": {
+                "x": "5px",
+                "y": "5px"
+            },
+            "disabled": {
+                "color": "rgba(105, 105, 105, 0.3)",
+                "focused": {
+                    "color": "rgba(105, 105, 105, 0.6)"
+                }
+            },
+            "enabled": {
+                "color": "rgba(154, 207, 7, 0.3)",
+                "focused": {
+                    "color": "rgba(154, 207, 7, 0.6)"
+                }
+            },
+            "invalid": {
+                "color": "rgba(207, 60, 0, 0.3)",
+                "focused": {
+                    "color": "rgba(207, 60, 0, 0.6)"
+                }
+            }
+        }
+    },
+    "status": {
+        "border": {
+            "width": "2px"
+        },
+        "connection": {
+            "border": {
+                "color": "rgba(154, 207, 7, 0.8)"
+            },
+            "focused": {
+                "border": {
+                    "color": "rgba(154, 207, 7, 1)"
+                }
+            }
+        },
+        "problem": {
+            "border": {
+                "color": "rgba(206, 96, 39, 0.80)"
+            },
+            "focused": {
+                "border": {
+                    "color": "rgba(206, 96, 39, 1)"
+                }
+            }
+        },
+        "disconnection": {
+            "border": {
+                "color": "rgba(206, 66, 66, 0.80)"
+            },
+            "focused": {
+                "border": {
+                    "color": "rgba(206, 66, 66, 1)"
+                }
+            }
+        }
+    },
+    "ruler": {
+        "width": "5px",
+        "fill": {
+            "color": "#e0e0e0"
+        },
+        "border": {
+            "width": "2px",
+            "color": "transparent"
+        },
+        "line": {
+            "width": "1px",
+            "left": "2px",
+            "fill": {
+                "color": "#696969"
+            }
+        },
+        "lookahead": "2px"
+    },
+    "focusline": {
+        "height": "80px",
+        "margin": {
+            "top": "10px",
+            "left": "0px",
+            "bottom": "10px",
+            "right": "0px"
+        },
+        "fill": {
+            "color": "transparent"
+        },
+        "bar": {
+            "fill": {
+                "color": "rgba(105, 105, 105, 0.3)"
+            },
+            "border": {
+                "color": "rgba(105, 0, 105, 0.5)"
+            }
+
+        },
+        "rulerShadow": {
+            "width": "1px",
+            "fill": {
+                "color": "rgba(255, 0, 0, 0.3)"
+            }
+        },
+        "focusedTime": {
+            "label": {
+                "height": "10px"
+            }
+        },
+        "selector": {
+            "min-width": "30px",
+            "max-width": "false",
+            "fill": {
+                "color": "rgba(144, 195, 191, 0.1)"
+            },
+            "border": {
+                "width": "0px",
+                "color": "rgba(144, 195, 191, 1)"
+            },
+            "mask": {
+                "fill": {
+                    "color": "rgba(255, 255, 255, 0.8)"
+                },
+                "border": {
+                    "width": "0px",
+                    "color": "transparent"
+                }
+            },
+            "handle": {
+                "fill": {
+                    "color": "rgba(105, 105, 105, 0.5)"
+                },
+                "width": "8px"
+            }
+        }
+    },
+    "axis": {
+        "stroke": {
+            "color": "rgba(0, 0, 0, 0.1)",
+            "width": "1px"
+        },
+        "tick": {
+            "height": "5px"
+        },
+        "label": {
+            "height": "11px"
+        }
+    }
+}

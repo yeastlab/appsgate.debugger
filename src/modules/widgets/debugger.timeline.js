@@ -26,7 +26,10 @@ Widgets.Timeline = Widgets.Widget.extend({
             .orient(this.attributes.orientation);
 
         this.xAxisGroup = this.svg.append("g")
-            .attr({'class': 'x axis ' + this.attributes.orientation})
+            .attr({
+                'class': 'x axis ' + this.attributes.orientation,
+                'transform': 'translate(0,' + this.computed('svg.height') + ')'
+            })
             .call(this.xAxis);
     },
 
@@ -36,7 +39,7 @@ Widgets.Timeline = Widgets.Widget.extend({
         this.xAxisGroup.call(this.xAxis);
     },
 
-    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
+    onRulerFocusUpdate: function (position, coordinate, timestamp, focusedFrame, lastFocusedFrame) {
         // do nothing
     }
 });

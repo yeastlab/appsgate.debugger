@@ -32,7 +32,7 @@ Widgets.ColorLight = Widgets.Device.extend({
             try {
                 var state = d.timestamp ? d.data.event.state : d.event.state;
                 return d3.hsl(
-                        Math.max(0.0, Math.min(parseInt(state.color) / 65535.0, 1.0)) * 360,
+                    Math.max(0.0, Math.min(parseInt(state.color) / 65535.0, 1.0)) * 360,
                     Math.max(0.0, Math.min(parseInt(state.saturation) / 254.0, 1.0)),
                     Math.max(0.0, Math.min(parseInt(state.brightness) / 254.0, 1.0))
                 );
@@ -46,7 +46,7 @@ Widgets.ColorLight = Widgets.Device.extend({
         Widgets.Device.prototype.onInitD3.apply(this, arguments);
 
         this.y = d3.scale.ordinal()
-            .range([0, this.computed('svg.height') - 1])
+            .range([0, this.computed('svg.height') - this.options.theme.device.state.border.width])
             .domain([false, true]);
 
         this.initD3Chart();
@@ -65,7 +65,7 @@ Widgets.ColorLight = Widgets.Device.extend({
         this.renderD3Chart();
     },
 
-    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
+    onRulerFocusUpdate: function (position, coordinate, timestamp, focusedFrame, lastFocusedFrame) {
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
         if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {

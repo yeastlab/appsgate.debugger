@@ -35,6 +35,13 @@
     // Inline include of SVG file for faster loading.
     // @include ../.tmp/gen/themes/basic/base.svg.js
 
+    // Inline include of theme config files
+    // @include ../.tmp/gen/themes/basic/theme.config.js
+
+    Debugger.themes = {
+        basic: THEMES_BASIC
+    };
+
     // @include modules/debugger.helpers.js
     // @include modules/debugger.logger.js
     // @include modules/debugger.events.js

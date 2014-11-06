@@ -45,6 +45,7 @@
     "grunt-grunticon": "^1.2.12",
     "grunt-open": "^0.2.3",
     "grunt-preprocess": "^4.0.0",
+    "grunt-shared-config": "^0.3.10",
     "grunt-template": "^0.2.3",
     "load-grunt-tasks": "^0.6.0",
     "lodash": "^2.4.1",

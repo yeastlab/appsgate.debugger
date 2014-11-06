@@ -30,27 +30,10 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
     // Initialize the dashboard.
     initialize: function (selector, options) {
-        this.options = defaultsDeep({}, options, {
-            width: 960,
-            widget: {
-                height: 50,
-                margin: {
-                    top: 10,
-                    left: 0,
-                    bottom: 10,
-                    right: 0
-                },
-                placeholder: {
-                    sidebar: {
-                        width: 200
-                    }
-                }
-            },
-            group: {
-                height: 60
-            },
-            ruler: {
-                width: 30
+        this.options = defaultsDeep(options || {}, {
+            theme: THEMES_BASIC,
+            selector: {
+                resolution: 30
             }
         });
 
@@ -128,9 +111,15 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     this._update_all_with_frame(lastFrame);
                 }
 
+                // Unset loading mode
+                this._toggleLoading(false);
+
                 // Update widgets according to ruler
                 this._notifyWidgetsOfRulerPosition();
             } else {
+                // Unset loading mode
+                this._toggleLoading(false);
+
                 // This is a streaming packet
                 var data = packet.data;
                 if (data instanceof Array) {
@@ -167,16 +156,14 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     // Request initial history trace.
     requestInitialHistoryTrace: function(params) {
         params = _.defaults({}, params, {
-            order: 'type'
+            order: 'type',
+            screenResolution: this._focusline.computed('svg.width'),
+            selectorResolution: this.options.selector.resolution,
+            brushResolution: this._focusline.computed('svg.width')
         });
 
         if (this.connector) {
-            this.connector.requestInitialHistoryTrace({
-                screenResolution: this._focusline.computed('svg.width'),
-                selectorResolution: this.options.ruler.width,
-                brushResolution: this._focusline.computed('svg.width'),
-                order: params.order
-            })
+            this.connector.requestInitialHistoryTrace(params);
         }
     },
 
@@ -190,7 +177,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         if (this.connector) {
             this.connector.requestHistoryTrace({
                 screenResolution: this._focusline.computed('svg.width'),
-                selectorResolution: this.options.ruler.width,
+                selectorResolution: this.options.selector.resolution,
                 brushResolution: params.brushResolution,
                 order: params.order
             })
@@ -210,56 +197,91 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     _init_ui: function (selector) {
         var self = this;
 
-        // Create the ruler.
-        this._$ruler = $('<div class="rule"><div class="line"></div></div>')
-            .css({
-                'width': this.options.ruler.width,
-                'margin-left': this.options.widget.placeholder.sidebar.width
-            });
-
-        // Create the footer.
+        // Create header and footer.
+        this._$header = $('<header></header>');
         this._$footer = $('<footer></footer>');
 
         // Create the widgets holder
-        this._$container = $('<div class="container"></div>');
+        this._$container = $('<div class="group-container"></div>');
+
+        // Create loading bar
+        this._$loader = $('<div class="dashboard-loader"><div class="icon-loading"></div> </div>');
 
         // Setup the dashboard.
         this.$el = $(selector).css({
-            width: parseInt(this.options.width) + "px"
-        }).addClass('dashboard').append(this._$ruler, this._$container, this._$footer);
+            width: parseInt(this.options.theme.dashboard.width) + "px"
+        }).addClass('dashboard').append(this._$header, this._$container, this._$loader, this._$footer);
 
-        // Make the ruler draggable.
-        this._$ruler.draggable({
-            axis: 'x',
-            containment: 'parent',
-            start: function(event, ui) {
-                this.lastPosition = ui.position;
-            },
-            drag: function (event, ui) {
-                var direction = (this.lastPosition.left > ui.position.left) ? 'left' : 'right';
-                self._notifyWidgetsOnRulerFocusChanged(ui.position, direction);
-                this.lastPosition = ui.position;
-            }
-        });
+        // Create ruler and hide it
+        this._create_dashboard_ruler();
+
+        // Put dashboard in loading mode
+        this._toggleLoading(true);
     },
 
     // Initialize D3
     _init_d3: function () {
         // Define main timescale.
-        this.timescale = d3.time.scale().range([0, this.options.with]);
+        this.timescale = d3.time.scale().range([0, this.options.theme.dashboard.width]);
+
+        // Setup focusline specific options.
+        var focusline_options = defaultsDeep({
+                theme: {
+                    dashboard: {
+                        widget: {
+                            height: this.options.theme.focusline.height,
+                            margin: this.options.theme.focusline.margin
+                        },
+                        sidebar: {
+                            width: 0
+                        },
+                        aside: {
+                            width: 0
+                        }
+                    }
+                },
+                extra: {
+                    svg: {
+                        innerMargin: {
+                            left: this.options.theme.focusline.selector.handle.width,
+                            right: this.options.theme.focusline.selector.handle.width
+                        }
+                    }
+                }
+            },
+            {
+                theme: this.options.theme
+            });
+
+        // Setup focusline attributes
+        var focusline_attributes = {
+            id: 'default',
+            orientation: 'bottom'
+        };
 
         // Create focusline.
-        this._focusline = new Debugger.Widgets.Focusline({id: 'default'}, {
-            height: 20,
-            placeholder: this.options.widget.placeholder
-        });
+        this._focusline = new Debugger.Widgets.Focusline(focusline_attributes, focusline_options);
 
         // Bind dashboard to its events.
         this.listenTo(this._focusline, 'focus:change', this._onFocusChange);
         this.listenTo(this._focusline, 'brush:resize', this._onBrushResize);
 
         // Attach it to the dashboard.
-        this._attach_widget(this._focusline, this._$footer);
+        this._attach_widget(this._focusline, this._$header);
+    },
+
+    _toggleLoading: function(visible) {
+        if (visible) {
+            this._$header.hide();
+            this._$container.hide();
+            this._$loader.show();
+            this._$footer.hide();
+        } else {
+            this._$header.show();
+            this._$container.show();
+            this._$loader.hide();
+            this._$footer.show();
+        }
     },
 
     // Reset dashboard to its initial state.
@@ -278,6 +300,9 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     // Clean dashboard. Cleaning the dashboard will (a) clean and detach all widgets but
     // the focusline and (b) destroy all groups.
     _clean: function() {
+        // Put dashboard in loading mode
+        this._toggleLoading(true);
+
         // Detach devices.
         _.forEach(this._devices, function(widget) {
             this._detach_widget(widget);
@@ -309,7 +334,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     _onBrushResize: function(width) {
         this.triggerMethod.apply(this, ['zoom:request'].concat([{
             screenResolution: this._focusline.computed('svg.width'),
-            selectorResolution: 10,
+            selectorResolution: this.options.selector.resolution,
             brushResolution: width
         }]));
     },
@@ -340,12 +365,14 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     },
 
     // Notify widgets that the ruler is at some `position` and dragged into some `direction`.
-    // Direction can be 'left' or 'right'
+    // Direction can be 'left' or 'right'.
     _notifyWidgetsOnRulerFocusChanged: function(position, direction) {
-        /* offset = parent.offset.left - ruler.width/2 */
-        var offset = this.$el.offset().left - this.options.ruler.width / 2;
-        _.invoke(this._devices, 'rulerFocusChanged', position.left - offset, direction || 'left');
-        _.invoke(this._programs, 'rulerFocusChanged', position.left - offset, direction || 'left');
+        var offset = this.options.theme.ruler.width / 2;
+        var coordinate = Math.max(Math.min((position.left - offset) / ( this._$ruler.parent().width() - this.options.theme.dashboard.sidebar.width), 1), 0);
+
+        _.invoke([this._focusline], 'rulerFocusChanged', position.left - offset, direction || 'left', coordinate);
+        _.invoke(this._devices, 'rulerFocusChanged', position.left - offset, direction || 'left', coordinate);
+        _.invoke(this._programs, 'rulerFocusChanged', position.left - offset, direction || 'left', coordinate);
     },
 
     // Update focusline.
@@ -497,23 +524,61 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }
     },
 
+    // Create the dashboard ruler.
+    _create_dashboard_ruler: function() {
+        var self = this;
+
+        // Create the ruler.
+        this._$ruler = $('<div class="rule"><div class="marker top"></div><div class="line"></div><div class="marker bottom"></div></div>')
+            .css({
+                'width': this.options.theme.ruler.width,
+                'margin-left': this.options.theme.dashboard.sidebar.width,
+                'left': this._$container.width() - this.options.theme.dashboard.sidebar.width -  this.options.theme.ruler.width / 2
+            });
+
+        // Attach it to the dashboard
+        this._$container.append(this._$ruler);
+
+        // Make the ruler draggable.
+        this._$ruler.draggable({
+            axis: 'x',
+            containment: 'parent',
+            start: function(event, ui) {
+                this.lastPosition = ui.position;
+            },
+            drag: function (event, ui) {
+                var direction = (this.lastPosition.left > ui.position.left) ? 'left' : 'right';
+                self._notifyWidgetsOnRulerFocusChanged(ui.position, direction);
+                this.lastPosition = ui.position;
+            }
+        });
+    },
+
+    // Remove the dashboard ruler.
+    _remove_dashboard_ruler: function() {
+        // Remove ruler
+        this._$ruler.remove();
+
+        // Delete ruler.
+        delete this._$ruler;
+    },
+
     // Create a new group with given `attributes`.
     _create_group: function(attributes) {
-        // Widget options.
-        var options = {
-            width: this.options.width,
-            height: this.options.group.height,
-            margin: this.options.widget.margin,
-            placeholder: this.options.widget.placeholder,
-            ruler: this.options.ruler
+        // Setup timeline options.
+        var timeline_options = {
+            theme: this.options.theme
+        };
+
+        // Setup timeline attributes
+        var timeline_attributes = {
+            id: _.uniqueId('timeline'),
+            name: attributes.name,
+            orientation: 'top'
         };
 
         // Create timeline for the group.
-        var timeline = new Debugger.Widgets.Timeline({
-            id: _.uniqueId('timeline'),
-            name: attributes.name,
-            orientation: 'bottom'
-        }, options);
+        var timeline = new Debugger.Widgets.Timeline(timeline_attributes, timeline_options);
 
         // Bind to focusline.
         if (_.isFunction(timeline.onFocusChange)) {
@@ -526,7 +591,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                 class: 'group'
             })
             .append('<header/>')
-            .append('<div class="container"></div>');
+            .append('<div class="element-container"></div>');
 
         // Attach group to the dashboard.
         this._$container.append(group);
@@ -537,7 +602,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         // Return group object.
         return {
             $el: group,
-            $container: group.find('.container')[0],
+            $container: group.find('.element-container')[0],
             timeline: timeline
         };
     },
@@ -562,11 +627,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
         // Define widget options.
         var options = {
-            width: this.options.width,
-            height: this.options.widget.height,
-            margin: this.options.widget.margin,
-            placeholder: this.options.widget.placeholder,
-            ruler: this.options.ruler
+            theme: this.options.theme
         };
 
         switch (what) {
