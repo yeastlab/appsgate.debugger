@@ -14,6 +14,7 @@ Widgets.Program = Widgets.Widget.extend({
     onInitD3: function () {
         this.state = this.svg.append('g').attr({class: 'program state'}).selectAll('rect');
         this.initD3Markers();
+        this.initD3TimelineGrid();
     },
 
     onRender: function () {
@@ -37,33 +38,25 @@ Widgets.Program = Widgets.Widget.extend({
             x: function (d) {
                 return self.timescale(self.dateFn(d.timestamp));
             },
-            y: function (d) {
-                return 0.25*self.computed('svg.height');
-            },
             width: function (d) {
                 return self.timescale(self.dateFn(d.next.timestamp)) - self.timescale(self.dateFn(d.timestamp))
             },
-            height: function (d) {
-                return 0.5*self.computed('svg.height');
+            class: function (d) {
+                return d.data.event.state.name;
             },
-            class: function (d) { return d.data.event.state.name; }
+            y: (self.computed('svg.height') - self.options.theme.program.state.height) / 2,
+            height: self.options.theme.program.state.height,
+            rx: self.options.theme.program.state.radius.x,
+            ry: self.options.theme.program.state.radius.y
         });
         state.attr({
             x: function (d) {
                 return self.timescale(self.dateFn(d.timestamp));
             },
-            y: function (d) {
-                return 0.25*self.computed('svg.height');
-            },
             width: function (d) {
                 return self.timescale(self.dateFn(d.next.timestamp)) - self.timescale(self.dateFn(d.timestamp))
             },
-            height: function (d) {
-                return 0.5*self.computed('svg.height');
-            },
-            class: function (d) { return d.data.event.state.name; },
-            rx: 5,
-            ry: 5
+            class: function (d) { return d.data.event.state.name; }
         });
         state.exit().remove();
 
@@ -71,9 +64,14 @@ Widgets.Program = Widgets.Widget.extend({
         // Render Markers
         //
         this.renderD3Markers();
+
+        //
+        // Render the Timeline Grid
+        //
+        this.renderTimelineGrid();
     },
 
-    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
+    onRulerFocusUpdate: function (position, coordinate, timestamp, focusedFrame, lastFocusedFrame) {
         var state = this.state.data(
             _.compact([focusedFrame, lastFocusedFrame]),
             function (d) {
@@ -87,4 +85,4 @@ Widgets.Program = Widgets.Widget.extend({
     }
 });
 
-_.extend(Widgets.Program.prototype, Widgets.Mixins.Markers, Widgets.Mixins.Focus);
+_.extend(Widgets.Program.prototype, Widgets.Mixins.TimelineGrid, Widgets.Mixins.Markers, Widgets.Mixins.Focus);
