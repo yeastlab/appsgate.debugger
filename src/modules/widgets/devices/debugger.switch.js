@@ -114,7 +114,7 @@ Widgets.Switch = Widgets.Device.extend({
         }
     },
 
-    onRulerFocusUpdate: function (position, coordinate, timestamp, focusedFrame, lastFocusedFrame) {
+    onRulerFocusUpdate: function (coordinate, direction, timestamp, focusedFrame, lastFocusedFrame) {
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
         if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {

@@ -71,7 +71,7 @@ Widgets.Program = Widgets.Widget.extend({
         this.renderTimelineGrid();
     },
 
-    onRulerFocusUpdate: function (position, coordinate, timestamp, focusedFrame, lastFocusedFrame) {
+    onRulerFocusUpdate: function (coordinate, direction, timestamp, focusedFrame, lastFocusedFrame) {
         var state = this.state.data(
             _.compact([focusedFrame, lastFocusedFrame]),
             function (d) {

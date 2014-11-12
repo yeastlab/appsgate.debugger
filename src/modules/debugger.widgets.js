@@ -134,6 +134,7 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
 
     // Internal method to initialize D3.
     _initD3: function(to) {
+        var self = this;
         var args = Array.prototype.slice.call(arguments);
 
         // Notify that we are going to initialized d3
@@ -148,12 +149,13 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
 
         // Setup D3 functions.
         this.dateFn = function (timestamp) {
-            return new Date(parseInt(timestamp))
+            return new Date(timestamp)
         };
 
         // Setup D3 timescale.
         this.timescale = d3.time.scale()
-            .range([0, this.computed('svg.width')]);
+            .range([0, this.computed('svg.width')])
+            .clamp(true);
 
         // Notify that we are initializing d3
         this.triggerMethod.apply(this, ['init:d3'].concat(args));
@@ -296,9 +298,9 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
     onBeforeRulerFocusUpdate: function() { /* default implementation: do nothing */ },
 
     // Internal method to notifying widget that the ruler's focus just changed.
-    // `Position` is the position of the ruler in pixel.
+    // `Coordinate` is the coordinate of the ruler between [0..1].
     // `Direction` is the `left` or `right` direction in which the ruler was dragged.
-    rulerFocusChanged: function (position, direction, coordinate, options) {
+    rulerFocusChanged: function (coordinate, direction, options) {
 
         // Set default options.
         options = defaultsDeep({}, options, {
@@ -309,12 +311,12 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
         this._lastFocusedFrame = this._focusedFrame;
 
         // Get exact matching timestamp.
-        var exactTimestamp = this.timescale.invert(parseInt(position)).getTime();
+        var exactTimestamp = this.timescale.invert(this.timescale.range()[1]*coordinate).getTime();
 
         // Get new focused frame.
-        this._focusedFrame = this._findFocusedFrame(position, direction, exactTimestamp, options.delta);
+        this._focusedFrame = this._findFocusedFrame(coordinate, direction, exactTimestamp, options.delta);
 
-        this.triggerMethod.apply(this, ['before:ruler:focus:update', position, coordinate, exactTimestamp, this._focusedFrame, this._lastFocusedFrame]);
+        this.triggerMethod.apply(this, ['before:ruler:focus:update', coordinate, direction, exactTimestamp, this._focusedFrame, this._lastFocusedFrame]);
 
         // Update the name of his widget.
         if (ensure(this._focusedFrame, 'data.name')) {
@@ -328,14 +330,16 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
             this.$el.css('opacity', this.options.theme.element.active.opacity);
         }
 
-        this.triggerMethod.apply(this, ['ruler:focus:update', position, coordinate, exactTimestamp, this._focusedFrame, this._lastFocusedFrame]);
+        this.triggerMethod.apply(this, ['ruler:focus:update', coordinate, direction, exactTimestamp, this._focusedFrame, this._lastFocusedFrame]);
     },
 
     // Handle `ruler:focus:update` event.
     onRulerFocusUpdate: function() { /* default implementation: do nothing */ },
 
     // Internal method used to find the focused frame.
-    _findFocusedFrame: function(position, direction, exactTimestamp, delta) {
+    _findFocusedFrame: function(coordinate, direction, exactTimestamp, delta) {
+        var position = this.timescale.range()[1] * coordinate;
+
         // Workout timestamp interval.
         var minTimestamp = this.timescale.invert(parseInt(position-delta)).getTime();
         var maxTimestamp = this.timescale.invert(parseInt(position+delta)).getTime();

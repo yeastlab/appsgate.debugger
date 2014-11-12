@@ -384,11 +384,12 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     // Direction can be 'left' or 'right'.
     _notifyWidgetsOnRulerFocusChanged: function(position, direction) {
         var offset = this.options.theme.ruler.width / 2;
-        var coordinate = Math.max(Math.min((position.left - offset) / ( this._$ruler.parent().width() - this.options.theme.dashboard.sidebar.width), 1), 0);
+        var coordinate = Math.max(Math.min((position.left + offset) / ( this._$ruler.parent().width() - this.options.theme.dashboard.sidebar.width), 1), 0);
 
-        _.invoke([this._focusline], 'rulerFocusChanged', position.left - offset, direction || 'left', coordinate);
-        _.invoke(this._devices, 'rulerFocusChanged', position.left - offset, direction || 'left', coordinate);
-        _.invoke(this._programs, 'rulerFocusChanged', position.left - offset, direction || 'left', coordinate);
+        _.invoke([this._focusline], 'rulerFocusChanged', coordinate, direction || 'left');
+        _.invoke(this._devices, 'rulerFocusChanged', coordinate, direction || 'left');
+        _.invoke(this._programs, 'rulerFocusChanged', coordinate, direction || 'left');
+        _.invoke(_.pluck(this._groups, 'timeline'), 'rulerFocusChanged', coordinate, direction || 'left');
     },
 
     // Update focusline.
