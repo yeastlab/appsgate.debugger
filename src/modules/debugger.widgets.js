@@ -113,7 +113,8 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
 
         // Create `aside` placeholder located/floating around the ruler.
         this._$aside = this.$('.placeholder.aside').css({
-            'height': this.computed('svg.height') + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom
+            'height': this.computed('svg.height') + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom,
+            'visibility': 'hidden'
         });
 
         // Notify that we are initializing UI.
@@ -537,18 +538,21 @@ Widgets.Mixins = {
 
     // **Aside mixin.**
     Aside: {
-        updateAsidePosition: function(position) {
-            if (position < this.computed('svg.width') / 2) {
-                this._$aside.css({
-                    'left': position + this.options.theme.dashboard.sidebar.width + this.options.ruler.width / 2,
-                    'right': 'auto'
-                });
+        updateAsidePosition: function(position, direction) {
+            var align = 'left';
+
+            if (position < this._$aside.width()) {
+                align = 'right';
+            } else if (position > this.computed('svg.width') - this._$aside.width()) {
+                align = 'left';
             } else {
-                this._$aside.css({
-                    'left': 'auto',
-                    'right': this.computed('svg.width') + this.options.ruler.width / 2 - position
-                });
+                align = direction == 'left' ? 'right' : 'left';
             }
+
+            this._$aside.css({
+                'left': align == 'right' ? position + this.options.theme.dashboard.sidebar.width + 2 * this.options.theme.ruler.width : 'auto',
+                'right': align == 'right' ? 'auto' : this.computed('svg.width') - position
+            });
         }
     },
 
