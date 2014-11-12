@@ -104,6 +104,7 @@ Widgets.Device = Widgets.Widget.extend({
 _.extend(Widgets.Device.prototype, Widgets.Mixins.TimelineGrid, Widgets.Mixins.Markers, Widgets.Mixins.Focus);
 
 // @include devices/debugger.temperature.js
+// @include devices/debugger.illumination.js
 // @include devices/debugger.switch.js
 // @include devices/debugger.contact.js
 // @include devices/debugger.keycardswitch.js

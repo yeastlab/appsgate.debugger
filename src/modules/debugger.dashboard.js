@@ -660,6 +660,12 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                             type: attributes.type
                         }, options);
                         break;
+                    case 'Illumination':
+                        widget = new Debugger.Widgets.Illumination({
+                            id: attributes.id,
+                            type: attributes.type
+                        }, options);
+                        break;
                     case 'Switch':
                         widget = new Debugger.Widgets.Switch({
                                 id: attributes.id,

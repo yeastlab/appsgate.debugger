@@ -123,6 +123,9 @@ html, body {
 
         .placeholder.aside {
             position: absolute;
+            @include background-image(radial-gradient(center center, ellipse cover, #FFFFFF, rgba(255, 255, 255, 0.1)));
+            padding-left: $dashboard_aside_padding_left;
+            padding-right: $dashboard_aside_padding_right;
             z-index: 500;
         }
 
