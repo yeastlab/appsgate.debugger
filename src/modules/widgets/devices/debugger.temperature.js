@@ -20,9 +20,7 @@ Widgets.Temperature = Widgets.Device.extend({
     },
 
     onBeforeInitD3: function () {
-        if (_.isFunction(Widgets.Device.prototype.onBeforeInitD3)) {
-            Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
-        }
+        Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
 
         // Setup d3 functions
         this.valueFn = function (d) {
