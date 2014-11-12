@@ -85,7 +85,7 @@ Widgets.Device = Widgets.Widget.extend({
         this.renderTimelineGrid();
     },
 
-    onRulerFocusUpdate: function (position, coordinate, timestamp, focusedFrame, lastFocusedFrame) {
+    onRulerFocusUpdate: function (coordinate, direction, timestamp, focusedFrame, lastFocusedFrame) {
         Widgets.Widget.prototype.onRulerFocusUpdate.apply(this, arguments);
 
         var status = this.status.data(

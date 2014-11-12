@@ -7,6 +7,10 @@ Widgets.Focusline = Widgets.Widget.extend({
         kind: 'focusline'
     },
 
+    onBeforeInitD3: function() {
+        this.floatingTimeFormat = d3.time.format("%H:%M:%S");
+    },
+
     onInitD3: function () {
         Widgets.Widget.prototype.onInitD3.apply(this, arguments);
 
@@ -27,6 +31,12 @@ Widgets.Focusline = Widgets.Widget.extend({
             'class': 'ruler-shadow',
             'width': this.options.theme.focusline.ruler_shadow.width,
             'height': this.computed('svg.height') - this.computed('axis.height')
+        });
+
+        // Add focused time text
+        this.focusedTime = this.svg.append('text').attr({
+            'y': (this.computed('svg.height') - this.options.theme.focusline.focused_time.label.height)/2,
+            'line-height': this.options.theme.focusline.focused_time.label.height
         });
 
         this.xAxis = d3.svg.axis()
@@ -102,6 +112,9 @@ Widgets.Focusline = Widgets.Widget.extend({
             .attr("y", this.options.theme.focusline.selector.border.width/2)
             .attr("height", this.computed('svg.height') - this.computed('axis.height') - this.options.theme.focusline.selector.border.width);
 
+        // Keep reference to brush extent node
+        this.brushExtent = this.brushGroup.select('rect.extent');
+
         // Add brush selector mask
         this.context.selectAll('.brush').append('rect').attr('class', 'mask left');
         this.context.selectAll('.brush').append('rect').attr('class', 'mask right');
@@ -148,6 +161,7 @@ Widgets.Focusline = Widgets.Widget.extend({
         this.chart.remove(); delete this.chart;
         this.context.remove(); delete this.context;
         this.brushGroup.remove(); delete this.brushGroup;
+        delete this.brushExtent;
         this.xAxisGroup.remove(); delete this.xAxisGroup;
     },
 
@@ -204,12 +218,32 @@ Widgets.Focusline = Widgets.Widget.extend({
         this.xAxisGroup.call(this.xAxis);
     },
 
-    rulerFocusChanged: function(position, direction, coordinate) {
-        var offset = parseInt(this.brushGroup.select('rect.extent').attr('x')) + this.options.theme.focusline.selector.handle.width;
-        var width = parseInt(this.brushGroup.select('rect.extent').attr('width')) - this.options.theme.focusline.selector.handle.width;
+    rulerFocusChanged: function (coordinate, direction, options) {
+        var brushExtentOffset = parseInt(this.brushExtent.attr('x'));
+        var brushExtentWidth = parseInt(this.brushExtent.attr('width'));
+        var focusedTextLabelWidth = parseInt(this.focusedTime.style('width'));
 
+        // Workout ruler shadow placement and focused time
+        var placement = brushExtentWidth * coordinate;
+        var focusedTime = this.timescale.invert(brushExtentOffset + placement);
+
+        // Setup ruler shadow placement
         this.rulerShadow.attr({
-           transform: 'translate('+(offset + width*coordinate)+', 0)'
+            transform: 'translate(' + (this.options.theme.ruler.width*2/3 + brushExtentOffset + placement) + ', 0)'
         });
+
+        // Workout a nice placement for focused text label
+        if (placement - focusedTextLabelWidth / 2 < 0) {
+            placement = 0;
+        } else if (placement + focusedTextLabelWidth / 2 > brushExtentWidth) {
+            placement = brushExtentWidth - focusedTextLabelWidth;
+        } else {
+            placement = placement - focusedTextLabelWidth / 2 + this.options.theme.ruler.width;
+        }
+
+        // Setup focused text label placement and value
+        this.focusedTime.attr({
+            x: brushExtentOffset + placement
+        }).text(this.floatingTimeFormat(focusedTime));
     }
 });
