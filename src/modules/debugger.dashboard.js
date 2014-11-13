@@ -203,19 +203,32 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         var self = this;
 
         // Create header and footer.
-        this._$header = $('<header></header>');
-        this._$footer = $('<footer></footer>');
+        this._$header = $('<header></header>').css({
+            width: parseInt(this.options.theme.dashboard.width) + "px"
+        });
+        this._$footer = $('<footer></footer>').css({
+            width: parseInt(this.options.theme.dashboard.width) + "px"
+        });
 
-        // Create the widgets holder
-        this._$container = $('<div class="group-container"></div>');
+        // Create the widgets group container
+        this._$group_container = $('<div class="group-container"></div>').css({
+            width: parseInt(this.options.theme.dashboard.width) + "px"
+        });
+
+        // Create dashboard content container
+        this._$container = $('<div class="dashboard-container"></div>').append(this._$group_container);
 
         // Create loading bar
-        this._$loader = $('<div class="dashboard-loader"><div class="icon-loading"></div> </div>');
+        this._$loader = $('<div class="dashboard-loader"><div class="icon-loading"></div> </div>').css({
+            width: parseInt(this.options.theme.dashboard.width) + "px"
+        });
 
         // Setup the dashboard.
-        this.$el = $(selector).css({
-            width: parseInt(this.options.theme.dashboard.width) + "px"
-        }).addClass('dashboard').append(this._$header, this._$container, this._$loader, this._$footer);
+        this.$el = $(selector).addClass('dashboard').append(
+            this._$header,
+            this._$container,
+            this._$loader,
+            this._$footer);
 
         // Create ruler and hide it
         this._create_dashboard_ruler();
@@ -289,12 +302,12 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     _toggleLoading: function(visible) {
         if (visible) {
             this._$header.hide();
-            this._$container.hide();
+            this._$group_container.hide();
             this._$loader.show();
             this._$footer.hide();
         } else {
             this._$header.show();
-            this._$container.show();
+            this._$group_container.show();
             this._$loader.hide();
             this._$footer.show();
         }
@@ -550,11 +563,11 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             .css({
                 'width': this.options.theme.ruler.width,
                 'margin-left': this.options.theme.dashboard.sidebar.width,
-                'left': this._$container.width() - this.options.theme.dashboard.sidebar.width -  this.options.theme.ruler.width / 2
+                'left': this._$group_container.width() - this.options.theme.dashboard.sidebar.width -  this.options.theme.ruler.width / 2
             });
 
         // Attach it to the dashboard
-        this._$container.append(this._$ruler);
+        this._$group_container.append(this._$ruler);
 
         // Make the ruler draggable.
         this._$ruler.draggable({
@@ -612,7 +625,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             .append('<div class="element-container"></div>');
 
         // Attach group to the dashboard.
-        this._$container.append(group);
+        this._$group_container.append(group);
 
         // Attach timeline to the group.
         this._attach_widget(timeline, group.find('header')[0]);
@@ -758,7 +771,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         if (target) {
             this.$(target).first().append(widget.$el);
         } else {
-            this._$container.append(widget.$el);
+            this._$group_container.append(widget.$el);
         }
 
         this.triggerMethod.apply(widget, ['attached'].concat(this.$el));
