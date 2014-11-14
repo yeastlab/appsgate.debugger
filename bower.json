@@ -36,6 +36,7 @@
     "jquery": "~2.1.1",
     "requirejs": "~2.1.14",
     "jqueryui": "~1.11.0",
-    "tinysort": "*"
+    "tinysort": "*",
+    "i18next": "~1.7.4"
   }
 }
