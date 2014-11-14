@@ -15,7 +15,8 @@
             baseUrl: '/',
             map: {
                 '*': {
-                    'underscore': 'lodash'
+                    'underscore': 'lodash',
+                    'i18n': 'i18next'
                 }
             },
             shim: {
@@ -31,8 +32,15 @@
                 },
                 'tinysort': ['jquery'],
                 'appsgate.debugger': {
-                    deps: ['jquery', 'jqueryui', 'backbone', 'lodash', 'd3', 'tinysort']
+                    deps: ['jquery', 'jqueryui', 'backbone', 'lodash', 'd3', 'tinysort', "i18n"]
                 }
+            },
+            i18next: {
+                lng: 'fr',
+                fallbackLng: 'en',
+                lowerCaseLng : true,
+                useCookie    : false,
+                resGetPath: 'locales/__lng__/__ns__.json'
             },
             paths: {
                 'appsgate.debugger': 'appsgate.debugger.dev',
@@ -41,11 +49,15 @@
                 'jquery': 'components/jquery/dist/jquery',
                 'tinysort': 'components/tinysort/dist/jquery.tinysort',
                 'jqueryui': 'components/jqueryui/jquery-ui',
-                'd3': 'components/d3/d3'
+                'd3': 'components/d3/d3',
+                'i18next': 'components/i18next/i18next.amd'
             }
         });
 
-        require(['appsgate.debugger'], function(Debugger) {
+        require(['appsgate.debugger', 'i18n'], function(Debugger, i18n) {
+            // setup i18n
+            i18n.init();
+
             var connector = new Debugger.Connector({
                 address: 'localhost',
                 port: '3000'
@@ -96,6 +108,9 @@
                             return true;
                         }]
                     ]
+                },
+                i18n: {
+                    ns: 'translation'
                 }
             });
             dashboard.connect(connector);

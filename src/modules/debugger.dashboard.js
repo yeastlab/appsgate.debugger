@@ -37,6 +37,9 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     initialize: function (selector, options) {
         this.options = defaultsDeep(options || {}, {
             theme: THEMES_BASIC,
+            i18n: {
+                ns: 'debugger'
+            },
             selector: {
                 resolution: 30
             }
@@ -603,7 +606,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         // Setup timeline attributes
         var timeline_attributes = {
             id: _.uniqueId('timeline'),
-            name: attributes.name,
+            name: i18n.t(attributes.name, {ns: this.options.i18n.ns}),
             orientation: 'top',
             timeFormat: this._d3_timeFormatMulti
         };

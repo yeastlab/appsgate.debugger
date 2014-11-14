@@ -1,0 +1,28 @@
+{
+  "groups": {
+    "temperature": "Temperature",
+    "temperature_plural": "Temperatures",
+    "switch": "Switch",
+    "switch_plural": "Switches",
+    "contact": "Contact",
+    "contact_plural": "Contacts",
+    "keyCardSwitch": "Keycard",
+    "keyCardSwitch_plural": "Keycards",
+    "smartPlug": "Smart Plug",
+    "smartPlug_plural": "Smart Plugs",
+    "colorlight": "Color Light",
+    "colorlight_plural": "Color Lights",
+    "illumination": "Illumination",
+    "illumination_plurial": "Illuminations",
+    "program": "Program",
+    "program_plural": "Programs",
+    "others": "Other",
+    "others_plural": "Others",
+    "focus": "Focus",
+    "focus_plural": "Focus",
+    "dependency": "Dependency",
+    "dependency_plural": "Dependencies",
+    "all": "All",
+    "all_plural": "All"
+  }
+}

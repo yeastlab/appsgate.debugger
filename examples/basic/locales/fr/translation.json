@@ -1,0 +1,28 @@
+{
+  "groups": {
+    "temperature": "Capteur de température",
+    "temperature_plural": "Capteurs de température",
+    "switch": "Interrupteur",
+    "switch_plural": "Interrupteur",
+    "contact": "Capteur de contact",
+    "contact_plural": "Capteurs de contact",
+    "keycardswitch": "Interrupteur à carte",
+    "keycardswitch_plural": "Interrupteurs à carte",
+    "smartplug": "Prise pilotables",
+    "smartplug_plural": "Prises pilotables",
+    "colorlight": "Ampoule Philips Hue",
+    "colorlight_plural": "Ampoules Philips Hue",
+    "illumination": "Capteur de luminosité",
+    "illumination_plurial": "Capteurs de luminosité",
+    "program": "Programme",
+    "program_plural": "Programmes",
+    "others": "Autre",
+    "others_plural": "Autres",
+    "focus": "Référence",
+    "focus_plural": "Références",
+    "dependency": "Dépendance",
+    "dependency_plural": "Dépendances",
+    "all": "Tous",
+    "all_plural": "Tous"
+  }
+}
