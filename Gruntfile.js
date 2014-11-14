@@ -136,6 +136,16 @@ module.exports = function (grunt) {
                     }
                 ]
             },
+            iconsForServer: {
+                files: [
+                    {
+                        expand: true,
+                        cwd: 'src/themes/basic/images/icons',
+                        src: ['*.gif', '*.png', '*.jpg'],
+                        dest: '.tmp/gen/themes/basic/icons/'
+                    }
+                ]
+            },
             themes: {
                 files: [
                     {
@@ -143,6 +153,12 @@ module.exports = function (grunt) {
                         cwd: '.tmp/gen/themes/basic/pictograms',
                         src: ['*.png'],
                         dest: 'lib/themes/basic/pictograms/'
+                    },
+                    {
+                        expand: true,
+                        cwd: 'src/themes/basic/images/icons',
+                        src: ['*.gif', '*.png', '*.jpg'],
+                        dest: 'lib/themes/basic/icons/'
                     },
                     {
                         expand: true,
@@ -308,6 +324,7 @@ module.exports = function (grunt) {
                 'grunticon',
                 'shared_config',
                 'copy:cssToScss',
+                'copy:iconsForServer',
                 'preprocess',
                 'template',
                 'compass:server',
