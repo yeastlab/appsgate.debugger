@@ -525,10 +525,10 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         if (attributes && attributes.func) {
             switch (attributes.func) {
                 case 'type': return function(item) {
-                    return item.type? 'Devices' : 'Programs'
+                    return item.type? {name: 'Devices', order: 2} : {name: 'Programs', order: 4}
                 };
                 default: return function(item) {
-                    return 'Unknown'
+                    return { name: 'Unknown', order: 3 }
                 };
             }
         } else if (attributes && attributes.grouping) {
@@ -541,9 +541,9 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     });
 
                     if (group) {
-                        return group.name;
+                        return { name: group.name, order: group.order || 3};
                     } else {
-                        return 'Unknown';
+                        return { name: 'Unknown', order: 3};
                     }
                 };
             })();
@@ -619,13 +619,21 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         var group = $('<div/>')
             .attr({
                 id: _.uniqueId('group'),
-                class: 'group'
+                class: 'group',
+                'data-name': attributes.name,
+                'data-order': attributes.order
             })
             .append('<header/>')
             .append('<div class="element-container"></div>');
 
         // Attach group to the dashboard.
         this._$group_container.append(group);
+
+        // Sort group by order then by name
+        this._$group_container.children().tsort(
+            {attr: 'data-order'},
+            {attr: 'data-name'}
+        );
 
         // Attach timeline to the group.
         this._attach_widget(timeline, group.find('header')[0]);
@@ -733,7 +741,6 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             this.listenTo(widget, 'marker:click', this._onWidgetMarkerClick);
 
             // Find and attach it to the group to which it belongs.
-            var groupName = this._demux(attributes);
             this._attach_widget_to_group(widget);
         } else {
             Debugger.logger.error('Unable to create device of type #{type}', attributes);
@@ -744,21 +751,19 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
     // Attach a widget to a group within this dashboard.
     // If the group if not created then it creates the group first.
-    _attach_widget_to_group: function(widget, group) {
-        // If group is not provided then find it from widget attributes.
-        if (_.isUndefined(group)) {
-            group = this._demux(widget.attributes);
-        }
+    _attach_widget_to_group: function(widget) {
+        var group = this._demux(widget.attributes);
 
         // If group is not created then create it.
-        if (_.isUndefined(this._groups[group])) {
-            this._groups[group] = this._create_group({
-                name: group
+        if (_.isUndefined(this._groups[group.name])) {
+            this._groups[group.name] = this._create_group({
+                name: group.name,
+                order: group.order
             });
         }
 
         // Attach it to the group in the DOM.
-        this._attach_widget(widget, this._groups[group].$container);
+        this._attach_widget(widget, this._groups[group.name].$container);
     },
 
     // Attach a widget to a target element within this dashboard.

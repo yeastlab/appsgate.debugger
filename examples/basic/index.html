@@ -29,8 +29,9 @@
                 'jquery': {
                     exports: '$'
                 },
+                'tinysort': ['jquery'],
                 'appsgate.debugger': {
-                    deps: ['jquery', 'jqueryui', 'backbone', 'lodash', 'd3']
+                    deps: ['jquery', 'jqueryui', 'backbone', 'lodash', 'd3', 'tinysort']
                 }
             },
             paths: {
@@ -38,6 +39,7 @@
                 'backbone': 'components/backbone/backbone',
                 'lodash': 'components/lodash/dist/lodash',
                 'jquery': 'components/jquery/dist/jquery',
+                'tinysort': 'components/tinysort/dist/jquery.tinysort',
                 'jqueryui': 'components/jqueryui/jquery-ui',
                 'd3': 'components/d3/d3'
             }
