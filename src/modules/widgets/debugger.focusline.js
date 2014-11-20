@@ -4,7 +4,8 @@
 Widgets.Focusline = Widgets.Widget.extend({
 
     defaults: {
-        kind: 'focusline'
+        kind: 'focusline',
+        live: false
     },
 
     onBeforeInitD3: function() {
@@ -168,7 +169,7 @@ Widgets.Focusline = Widgets.Widget.extend({
     onBeforeRender: function(data, focus, options) {
         // Setup brush extent to be the size of the whole timescale domain
         // just before the first rendering.
-        if (_.isUndefined(this._isFirstRendering)) {
+        if (_.isUndefined(this._isFirstRendering) && ! this.attributes.live) {
             this.brush.extent(this.timescale.domain())(this.brushGroup);
             this._isFirstRendering = false;
         }
@@ -220,7 +221,7 @@ Widgets.Focusline = Widgets.Widget.extend({
 
     rulerFocusChanged: function (coordinate, direction, options) {
         var brushExtentOffset = parseInt(this.brushExtent.attr('x'));
-        var brushExtentWidth = parseInt(this.brushExtent.attr('width'));
+        var brushExtentWidth = this.brush.empty()? this.computed('svg.width') : parseInt(this.brushExtent.attr('width'));
         var focusedTextLabelWidth = parseInt(this.focusedTime.style('width'));
 
         // Workout ruler shadow placement and focused time

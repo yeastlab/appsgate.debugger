@@ -40,6 +40,9 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             i18n: {
                 ns: 'debugger'
             },
+            livetrace: {
+                delayBeforeFlush: 100000
+            },
             selector: {
                 resolution: 30
             }
@@ -85,7 +88,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
                 if (packet.eventline) {
                     // Reset the dashboard on each request.
-                    this._reset();
+                    this._reset('history');
 
                     // Update focusline with received data.
                     // note: here we prevent rendering except for the last frame
@@ -135,6 +138,12 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                 // Unset loading mode
                 this._toggleLoading(false);
 
+                // Reset the dashboard on each request.
+                if (this._requestedForLiveTrace) {
+                    this._reset('live');
+                    this._requestedForLiveTrace = false;
+                }
+
                 // This is a streaming packet
                 var data = packet.data;
                 if (data instanceof Array) {
@@ -148,8 +157,8 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     }, this);
 
                     if (lastFrame) {
-                        this._update_focusline_with_frame(lastFrame);
-                        this._update_all_with_frame(lastFrame);
+                        this._update_focusline_with_frame(lastFrame, {live: true});
+                        this._update_all_with_frame(lastFrame, {live: true});
                     }
 
                     // @todo document
@@ -158,8 +167,8 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                         this._update_all_with_frame({timestamp: this._focus[1]});
                     }
                 } else {
-                    this._update_focusline_with_frame(data);
-                    this._update_all_with_frame(data);
+                    this._update_focusline_with_frame(data, {live: true});
+                    this._update_all_with_frame(data, {live: true});
                 }
 
                 // Update widgets according to ruler.
@@ -178,9 +187,9 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     requestInitialHistoryTrace: function(params) {
         params = _.defaults({}, params, {
             order: 'type',
-            screenResolution: this._focusline.computed('svg.width'),
+            screenResolution: this.options.theme.dashboard.width,
             selectorResolution: this.options.selector.resolution,
-            brushResolution: this._focusline.computed('svg.width')
+            brushResolution: this.options.theme.dashboard.width
         });
 
         if (this.connector) {
@@ -208,9 +217,14 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     },
 
     //  Request live trace.
-    requestLiveTrace: function() {
+    requestLiveTrace: function(params) {
+        params = _.defaults({}, params, {
+            refreshRate: 2000
+        });
+
         if (this.connector) {
-            this.connector.requestLiveTrace();
+            this._requestedForLiveTrace = true;
+            this.connector.requestLiveTrace(params);
         }
     },
 
@@ -283,52 +297,6 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         if (this._d3_settings && this._d3_settings.timeFormatMulti) {
             this._d3_timeFormatMulti = d3.time.format.multi(this._d3_settings.timeFormatMulti);
         }
-
-        // Setup focusline specific options.
-        var focusline_options = defaultsDeep({
-                theme: {
-                    dashboard: {
-                        widget: {
-                            height: this.options.theme.focusline.height,
-                            margin: this.options.theme.focusline.margin
-                        },
-                        sidebar: {
-                            width: 0
-                        },
-                        aside: {
-                            width: 0
-                        }
-                    }
-                },
-                extra: {
-                    svg: {
-                        innerMargin: {
-                            left: this.options.theme.focusline.selector.handle.width,
-                            right: this.options.theme.focusline.selector.handle.width
-                        }
-                    }
-                }
-            },
-            {
-                theme: this.options.theme
-            });
-
-        // Setup focusline attributes
-        var focusline_attributes = {
-            id: 'default',
-            orientation: 'bottom',
-            timeFormat: this._d3_timeFormatMulti
-        };
-
-        // Create focusline.
-        this._focusline = new Debugger.Widgets.Focusline(focusline_attributes, focusline_options);
-
-        // Bind dashboard to its events.
-        this.listenTo(this._focusline, 'focus:change', this._onFocusChange);
-        this.listenTo(this._focusline, 'brush:resize', this._onBrushResize);
-
-        // Attach it to the dashboard.
-        this._attach_widget(this._focusline, this._$header);
     },
 
     _toggleLoading: function(visible) {
@@ -346,16 +314,19 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     },
 
     // Reset dashboard to its initial state.
-    _reset: function() {
+    _reset: function(mode) {
         // Clean groups, devices, programs.
         this._clean();
 
         this._devices = {};  // reset devices
         this._programs = {}; // reset programs
 
-        // Reset focusline and domain.
-        this._focusline.reset();
-        this._domain = [_.now(), 0];
+        // Reset focusline
+        this._remove_focusline();
+        this._create_focusline(mode);
+
+        // Reset domain.
+        this._domain = [_.now() - this.options.livetrace.delayBeforeFlush, _.now()];
     },
 
     // Clean dashboard. Cleaning the dashboard will (a) clean and detach all widgets but
@@ -439,8 +410,12 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
     // Update focusline.
     _update_focusline_with_frame: function(frame, options) {
-        // Update domain.
-        this._domain = [Math.min(this._domain[0], frame.timestamp), Math.max(this._domain[1], frame.timestamp)];
+        if (options && options.live) {
+            this._domain = [Math.max(this._domain[0], frame.timestamp - this.options.livetrace.delayBeforeFlush), frame.timestamp];
+        } else {
+            // Update domain.
+            this._domain = [Math.min(this._domain[0], frame.timestamp), Math.max(this._domain[1], frame.timestamp)];
+        }
 
         // Update focusline.
         this._focusline.update({
@@ -584,6 +559,73 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                 return 'Unknown';
             };
         }
+    },
+
+    // Create focusline
+    _create_focusline: function(mode) {
+        // Setup focusline specific options.
+        var focusline_options = defaultsDeep({
+                theme: {
+                    dashboard: {
+                        widget: {
+                            height: this.options.theme.focusline.height,
+                            margin: this.options.theme.focusline.margin
+                        },
+                        sidebar: {
+                            width: 0
+                        },
+                        aside: {
+                            width: 0
+                        }
+                    }
+                },
+                extra: {
+                    svg: {
+                        innerMargin: {
+                            left: this.options.theme.focusline.selector.handle.width,
+                            right: this.options.theme.focusline.selector.handle.width
+                        }
+                    }
+                }
+            },
+            {
+                theme: this.options.theme
+            });
+
+        // Setup focusline attributes
+        var focusline_attributes = {
+            id: 'default',
+            orientation: 'bottom',
+            timeFormat: this._d3_timeFormatMulti,
+            live: mode == 'live' ? true : false
+        };
+
+        // Create focusline.
+        this._focusline = new Debugger.Widgets.Focusline(focusline_attributes, focusline_options);
+
+        // Bind dashboard to its events.
+        this.listenTo(this._focusline, 'focus:change', this._onFocusChange);
+        this.listenTo(this._focusline, 'brush:resize', this._onBrushResize);
+
+        // Attach it to the dashboard.
+        this._attach_widget(this._focusline, this._$header);
+    },
+
+    // Remove focusline
+    _remove_focusline: function() {
+        if (!this._focusline) {
+            return;
+        }
+
+        // Detach timeline.
+        this._detach_widget(this._focusline);
+
+        // Unbind dashboard to its events.
+        this.stopListening(this._focusline, 'focus:change', this._onFocusChange);
+        this.stopListening(this._focusline, 'brush:resize', this._onBrushResize);
+
+        // Delete group.
+        delete this._focusline;
     },
 
     // Create the dashboard ruler.

@@ -292,6 +292,17 @@ Debugger.SmartBuffer = (function () {
             while(this._buffer.length > 0) {
                 this._buffer.pop();
             }
+        },
+
+        // Flush all frames from buffer that date before `timestamp`.
+        flushBefore: function (timestamp) {
+            _.remove(this._buffer, function(frame) {
+                if (this.options.pairing) {
+                    return frame.timestamp <= timestamp && frame.next.timestamp < timestamp;
+                } else {
+                    return frame.timestamp <= timestamp;
+                }
+            }, this);
         }
     });
 
