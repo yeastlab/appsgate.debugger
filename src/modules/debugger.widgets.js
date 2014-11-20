@@ -263,6 +263,11 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
             this.buffer.push(data.timestamp, data.frame);
         }
 
+        // Clear data if live mode is one
+        if (options && options.live) {
+            this.buffer.flushBefore(focus[0]);
+        }
+
         // Notify that we are updating.
         this.triggerMethod.apply(this, ['frame:update'].concat(args));
 
