@@ -33,9 +33,10 @@ _.extend(Debugger.Connector.prototype, Backbone.Events, {
     },
 
     // Request livetrace from the AppsGate server.
-    requestLiveTrace: function() {
+    requestLiveTrace: function(params) {
         return this._exec({
-            name: 'livetrace'
+            name: 'livetrace',
+            args: params
         });
     },
 
