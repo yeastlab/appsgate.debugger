@@ -119,6 +119,12 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     this._update_all_with_frame(lastFrame);
                 }
 
+                // @todo document
+                if (lastFrame.timestamp < this._focus[1]) {
+                    this._update_focusline_with_frame({timestamp: this._focus[1]});
+                    this._update_all_with_frame({timestamp: this._focus[1]});
+                }
+
                 // Unset loading mode
                 this._toggleLoading(false);
 
@@ -143,6 +149,12 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     if (lastFrame) {
                         this._update_focusline_with_frame(lastFrame);
                         this._update_all_with_frame(lastFrame);
+                    }
+
+                    // @todo document
+                    if (lastFrame.timestamp < this._focus[1]) {
+                        this._update_focusline_with_frame({timestamp: this._focus[1]});
+                        this._update_all_with_frame({timestamp: this._focus[1]});
                     }
                 } else {
                     this._update_focusline_with_frame(data);
