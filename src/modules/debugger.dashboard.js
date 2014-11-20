@@ -46,6 +46,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         });
 
         this._init_ui(selector);
+        this._init_konami();
         this._init_d3();
         this._clean();
     },
@@ -212,6 +213,20 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     },
 
     // **Private API**
+
+    _init_konami: function() {
+        var self = this;
+        self._konami = "38,38,40,40,37,39,37,39,66,65";
+        self._konami_slice = self._konami.split(',').length;
+        self._kkeys = [];
+        window.addEventListener("keydown", function(e){
+            self._kkeys.push( e.keyCode );
+            if ( self._kkeys.toString().indexOf( self._konami ) >= 0 ) {
+                $('body').addClass('konami-background');
+            }
+            self._kkeys = self._kkeys.slice(-self._konami_slice);
+        }, true);
+    },
 
     // Initialize the UI within the container designated by the `selector`.
     _init_ui: function (selector) {
