@@ -200,7 +200,9 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                 screenResolution: this._focusline.computed('svg.width'),
                 selectorResolution: this.options.selector.resolution,
                 brushResolution: params.brushResolution,
-                order: params.order
+                order: params.order,
+                from: this._domain[0],
+                to: this._domain[1]
             })
         }
     },
