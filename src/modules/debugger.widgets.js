@@ -100,10 +100,11 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
             'width': this.options.theme.dashboard.sidebar.width,
             'height': this.computed('svg.height') + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom
         });
+        this._$sidemenu = $('<div/>').addClass('menu');
         this._$name = $('<div/>').addClass('title').css({
             'line-height': this.computed('svg.height') + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom + 'px'
         });
-        this._$sidebar.append(this._$name);
+        this._$sidebar.append(this._$sidemenu, this._$name);
 
         // Create `D3` placeholder (where we draw).
         this._$d3 = this.$('.placeholder.d3').css({
@@ -588,6 +589,42 @@ Widgets.Mixins = {
 
         destroyTimelineGrid: function() {
             this.xTimelineGridAxisGroup.remove(); delete this.xTimelineGridAxisGroup;
+        }
+    },
+
+    // **Eventline actions mixin.**
+    EventlineActions: {
+        initUIEventlineActions: function() {
+            var self = this;
+
+            // Button used to focus debugger on this eventline
+            this._$focusButton = $('<button type="button "></button>"').css({
+                'margin-top': this.computed('svg.height') * 0.1,
+                'height': this.computed('svg.height') * 0.8,
+                'margin-left': this.computed('svg.height') * 0.1,
+                'width': this.computed('svg.height') * 0.8,
+                'background-size': this.computed('svg.height')*0.6 + 'px ' + this.computed('svg.height')*0.6 + 'px'
+            }).addClass(
+                self.attributes.focused ? 'picto-focused' : 'picto-focus'
+            ).on('click', function() {
+                self.triggerMethod.apply(this, ['eventline:focus:request'].concat(self.attributes));
+            });
+
+            // Attach focus button to sidemenu
+            this._$sidemenu.append(this._$focusButton);
+
+            // Catch click on eventline name
+            this._$name.on('click', function(){
+                self.triggerMethod.apply(this, ['eventline:name:click'].concat(self.attributes));
+            }).css({
+                'cursor': 'pointer'
+            });
+        },
+
+        markAsFocused: function(focused) {
+            this.attributes.focused = focused;
+            this._$focusButton.addClass(focused ? 'picto-focused' : 'picto-focus');
+            this._$focusButton.removeClass(focused ? 'picto-focus' : 'picto-focused');
         }
     }
 };

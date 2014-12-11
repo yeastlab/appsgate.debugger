@@ -4,6 +4,10 @@
 Widgets.Device = Widgets.Widget.extend({
 
     onInitUI: function () {
+        // Setup eventline action
+        this.initUIEventlineActions();
+
+        // Device pictogram used to represent its current state
         this._$picto = $('<div/>').addClass('picto').css({
             'height': this.computed('svg.height'),
             'line-height': this.computed('svg.height') + 'px',
@@ -101,7 +105,13 @@ Widgets.Device = Widgets.Widget.extend({
     }
 });
 
-_.extend(Widgets.Device.prototype, Widgets.Mixins.TimelineGrid, Widgets.Mixins.Markers, Widgets.Mixins.Focus);
+_.extend(
+    Widgets.Device.prototype,
+    Widgets.Mixins.TimelineGrid,
+    Widgets.Mixins.Markers,
+    Widgets.Mixins.Focus,
+    Widgets.Mixins.EventlineActions
+);
 
 // @include devices/debugger.temperature.js
 // @include devices/debugger.illumination.js

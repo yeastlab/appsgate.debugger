@@ -25,6 +25,9 @@ Debugger.Dashboard = function (selector, options) {
     // devices or programs in order to sync their timescale.
     this._domain = [_.now(), 0];
 
+    // Keep track of dashboard state
+    this._state = {};
+
     if (_.isFunction(this.initialize)) {
         this.initialize(selector, options);
     }
@@ -129,6 +132,16 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     this._update_all_with_frame({timestamp: this._focus[1]});
                 }
 
+                // If specified, mark focused widget as focused
+                if (packet.request.args.focus) {
+                    switch (packet.request.args.focusType) {
+                        case 'id':
+                            (this._devices[packet.request.args.focus] || this._programs[packet.request.args.focus]).markAsFocused(true);
+                        default:
+                            Debugger.logger.warn('Only focus by `id` is supported');
+                    }
+                }
+
                 // Unset loading mode
                 this._toggleLoading(false);
 
@@ -192,6 +205,8 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             brushResolution: this.options.theme.dashboard.width
         });
 
+        this._setState(params);
+
         if (this.connector) {
             this.connector.requestInitialHistoryTrace(params);
         }
@@ -201,18 +216,17 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     requestHistoryTrace: function(params) {
         params = _.defaults({}, params, {
             order: 'type',
+            from: this._domain[0],
+            to: this._domain[1],
+            screenResolution: this._focusline.computed('svg.width'),
+            selectorResolution: this.options.selector.resolution,
             brushResolution: this._focusline.computed('svg.width')
         });
 
+        this._setState(params);
+
         if (this.connector) {
-            this.connector.requestHistoryTrace({
-                screenResolution: this._focusline.computed('svg.width'),
-                selectorResolution: this.options.selector.resolution,
-                brushResolution: params.brushResolution,
-                order: params.order,
-                from: this._domain[0],
-                to: this._domain[1]
-            })
+            this.connector.requestHistoryTrace(params)
         }
     },
 
@@ -229,6 +243,48 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     },
 
     // **Private API**
+
+    _setState: function(key, value) {
+        var attr, attrs;
+        if (key == null) return this;
+
+        if (typeof key === 'object') {
+            attrs = key;
+        } else {
+            (attrs = {})[key] = value;
+        }
+
+        for (attr in attrs) {
+            this._state[attr] = attrs[attr];
+        }
+    },
+
+    _delState: function(key) {
+        var keys;
+        if (key == null) return this;
+
+        if (typeof key === 'object') {
+            keys = key;
+        } else {
+            keys = [key];
+        }
+
+        for (key in keys) {
+            delete this._state[keys[key]];
+        }
+    },
+
+    _getState: function(attr) {
+        return this._state[attr];
+    },
+
+    // Get zoom context
+    _getHistoryZoomContext: function() {
+        return _.pick(this._state, [
+            'from', 'to',
+            'screenResolution', 'selectorResolution', 'brushResolution',
+            'order', 'focus', 'focusType']);
+    },
 
     _init_konami: function() {
         var self = this;
@@ -364,11 +420,11 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
     // Brush resize callback.
     _onBrushResize: function(width) {
-        this.triggerMethod.apply(this, ['zoom:request'].concat([{
-            screenResolution: this._focusline.computed('svg.width'),
-            selectorResolution: this.options.selector.resolution,
-            brushResolution: width
-        }]));
+        // Keep track of new brush resolution
+        this._setState('brushResolution', width);
+
+        // Propagate event
+        this.triggerMethod.apply(this, ['zoom:request'].concat([this._getHistoryZoomContext()]));
     },
 
     // Widget marker click callback.
@@ -389,6 +445,42 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         // - textContent: String - concatenations of all decorations to plain text
         // - htmlContent: String - concatenations of all decorations to HTML
         this.triggerMethod.apply(this, ['marker:click'].concat([decorations, textContent, htmlContent]));
+    },
+
+    // Widget focus request
+    _onWidgetFocusRequest: function(attributes) {
+        var context =  {};
+        var markAsUnfocused = null;
+
+        if (attributes.focused) {
+            markAsUnfocused = attributes.id;
+            // Delete focus state variables
+            this._delState(['focus', 'focusType']);
+            // Build history context
+            context = _.merge(context, this._getHistoryZoomContext(), {
+                order: 'type'
+            });
+        } else {
+            markAsUnfocused = this._getState('focus');
+            // Build history context
+            context = _.merge(context, this._getHistoryZoomContext(), {
+                focus: attributes.id,
+                focusType: 'id',
+                order: 'dep'
+            });
+        }
+
+        if (markAsUnfocused) {
+            (this._devices[markAsUnfocused] || this._programs[markAsUnfocused]).markAsFocused(false);
+        }
+
+        this.triggerMethod.apply(this, ['eventline:focus:request'].concat([context, attributes]));
+    },
+
+    // Widget name click
+    _onWidgetNameClick: function(attributes) {
+        var context = this._getHistoryZoomContext();
+        this.triggerMethod.apply(this, ['eventline:name:click'].concat([context, attributes]));
     },
 
     // Notify widgets of the position of the ruler.
@@ -736,6 +828,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
     // Create a new `what` widget with given `attributes`.
     _create_widget: function (what, attributes) {
+        var self = this;
         var widget = undefined;
 
         // Define widget options.
@@ -745,51 +838,61 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
         switch (what) {
             case 'program':
-                widget = new Debugger.Widgets.Program({id: attributes.id}, options);
+                widget = new Debugger.Widgets.Program({
+                    id: attributes.id,
+                    focused: attributes.id == self._getState('focus')
+                }, options);
                 break;
             case 'device':
                 switch (attributes.type) {
                     case 'Temperature':
                         widget = new Debugger.Widgets.Temperature({
                             id: attributes.id,
-                            type: attributes.type
+                            type: attributes.type,
+                            focused: attributes.id == self._getState('focus')
                         }, options);
                         break;
                     case 'Illumination':
                         widget = new Debugger.Widgets.Illumination({
                             id: attributes.id,
-                            type: attributes.type
+                            type: attributes.type,
+                            focused: attributes.id == self._getState('focus')
                         }, options);
                         break;
                     case 'Switch':
                         widget = new Debugger.Widgets.Switch({
-                                id: attributes.id,
-                                type: attributes.type
-                            }, options);
+                            id: attributes.id,
+                            type: attributes.type,
+                            focused: attributes.id == self._getState('focus')
+                        }, options);
                         break;
                     case 'Contact':
                         widget = new Debugger.Widgets.Contact({
-                                id: attributes.id,
-                                type: attributes.type
-                            }, options);
+                            id: attributes.id,
+                            type: attributes.type,
+                            focused: attributes.id == self._getState('focus')
+                        }, options);
                         break;
                     case 'KeyCardSwitch':
                         widget = new Debugger.Widgets.KeycardSwitch({
-                                id: attributes.id,
-                                type: attributes.type
-                            }, options);
+                            id: attributes.id,
+                            type: attributes.type,
+                            focused: attributes.id == self._getState('focus')
+                        }, options);
                         break;
                     case 'SmartPlug':
                         widget = new Debugger.Widgets.SmartPlug({
-                                id: attributes.id,
-                                type: attributes.type
-                            }, options);
+                            id: attributes.id,
+                            type: attributes.type,
+                            focused: attributes.id == self._getState('focus')
+                        }, options);
                         break;
                     case 'ColorLight':
                         widget = new Debugger.Widgets.ColorLight({
-                                id: attributes.id,
-                                type: attributes.type
-                            }, options);
+                            id: attributes.id,
+                            type: attributes.type,
+                            focused: attributes.id == self._getState('focus')
+                        }, options);
                         break;
                 }
                 break;
@@ -813,6 +916,8 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
             // Bind dashboard to widget events.
             this.listenTo(widget, 'marker:click', this._onWidgetMarkerClick);
+            this.listenTo(widget, 'eventline:focus:request', this._onWidgetFocusRequest);
+            this.listenTo(widget, 'eventline:name:click', this._onWidgetNameClick);
 
             // Find and attach it to the group to which it belongs.
             this._attach_widget_to_group(widget);
@@ -862,6 +967,6 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
         this.triggerMethod.apply(widget, ['detached'].concat(parent));
 
-        widget.$el.remove();
+        widget.$el.detach();
     }
 });

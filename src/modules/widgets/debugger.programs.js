@@ -11,6 +11,10 @@ Widgets.Program = Widgets.Widget.extend({
         }
     },
 
+    onInitUI: function () {
+        this.initUIEventlineActions();
+    },
+
     onInitD3: function () {
         this.state = this.svg.append('g').attr({class: 'program state'}).selectAll('rect');
         this.initD3Markers();
@@ -85,4 +89,10 @@ Widgets.Program = Widgets.Widget.extend({
     }
 });
 
-_.extend(Widgets.Program.prototype, Widgets.Mixins.TimelineGrid, Widgets.Mixins.Markers, Widgets.Mixins.Focus);
+_.extend(
+    Widgets.Program.prototype,
+    Widgets.Mixins.TimelineGrid,
+    Widgets.Mixins.Markers,
+    Widgets.Mixins.Focus,
+    Widgets.Mixins.EventlineActions
+);

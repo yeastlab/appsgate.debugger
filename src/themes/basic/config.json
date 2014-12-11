@@ -38,7 +38,10 @@
             }
         },
         "sidebar": {
-            "width": "200px"
+            "width": "250px",
+            "menu": {
+                "width": "25px"
+            }
         },
         "aside": {
             "padding": {

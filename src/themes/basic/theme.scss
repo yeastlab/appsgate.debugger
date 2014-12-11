@@ -115,7 +115,7 @@ html, body {
         .element {
             .title {
                 padding-left: $element_title_padding_left;
-                width: $dashboard_sidebar_width - $dashboard_widget_height - 3*$element_title_padding_left;
+                width: $dashboard_sidebar_width - $dashboard_widget_height - $dashboard_sidebar_menu_width - 3*$element_title_padding_left;
             }
             .picto {
                 margin-left: $element_title_padding_left;
@@ -142,6 +142,19 @@ html, body {
         }
 
         .placeholder.sidebar {
+            .menu {
+                float: left;
+                width: $dashboard_sidebar_menu_width;
+                button {
+                    display: block;
+                    padding: 1px;
+                    border-radius: 3px;
+                    background-color: #fff;
+                    background-position: center;
+                    border: 1px solid #ccc;
+                    cursor: pointer;
+                }
+            }
             .title {
                 float: left;
                 white-space: nowrap;
