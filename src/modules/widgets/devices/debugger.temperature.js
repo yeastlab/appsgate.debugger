@@ -26,12 +26,12 @@ Widgets.Temperature = Widgets.Device.extend({
         this.valueFn = function (d) {
             try {
                 if (d.timestamp) {
-                    return parseInt(d.data.event.state.value);
+                    return parseFloat(d.data.event.state.value);
                 } else {
-                    return parseInt(d.event.state.value);
+                    return parseFloat(d.event.state.value);
                 }
             } catch (e) {
-                return 0;
+                return 0.0;
             }
         };
     },
@@ -70,7 +70,7 @@ Widgets.Temperature = Widgets.Device.extend({
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
         if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {
-            this._$picto.attr({class: 'picto'}).text(this.valueFn(focusedFrame.data)+'°');
+            this._$picto.attr({class: 'picto'}).text(parseInt(this.valueFn(focusedFrame.data))+'°');
         } else {
             // fallback
             this._$picto.attr({class: 'picto picto-temperature_type'}).text('');
