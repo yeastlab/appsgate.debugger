@@ -9,7 +9,7 @@ Widgets.Device = Widgets.Widget.extend({
 
         // Device pictogram used to represent its current state
         this._$picto = $('<div/>').addClass('picto').css({
-            'height': this.computed('svg.height'),
+            'height': this.computed('widget.height'),
             'line-height': this.computed('svg.height') + 'px',
             'background-size': this.computed('svg.height') + 'px ' + this.computed('svg.height') + 'px',
             'width': this.computed('svg.height')

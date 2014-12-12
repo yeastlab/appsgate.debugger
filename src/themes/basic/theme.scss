@@ -134,8 +134,11 @@ html, body {
         position: relative;
 
         .placeholder.aside {
+            @include border-radius(5px);
             position: absolute;
-            @include background-image(radial-gradient(center center, ellipse cover, #FFFFFF, rgba(255, 255, 255, 0.1)));
+            color: #ffffff;
+            background-color: #30404f;
+            font-size: 0.7em;
             padding-left: $dashboard_aside_padding_left;
             padding-right: $dashboard_aside_padding_right;
             z-index: 500;
@@ -232,6 +235,26 @@ html, body {
     stroke-dasharray: 1, 2;
 }
 
+.value.area {
+    fill: $device_value_fill_color;
+    stroke-width: 0;
+
+    .focused {
+        fill: $device_value_focused_fill_color;
+    }
+}
+
+.value.border {
+    stroke: $device_value_border_color;
+    stroke-width: $device_value_border_width;
+    fill: transparent;
+}
+
+.value.border.pending {
+    stroke-linecap: 'square';
+    stroke-dasharray: 1, 2;
+}
+
 .program {
     .disabled {
         fill: $program_state_disabled_color;
@@ -302,7 +325,7 @@ html, body {
     }
 
     .focused {
-        stroke-width: $device_state_border_width;
+        stroke-width: $device_state_border_focused_width;
         stroke: $device_state_border_focused_color;
     }
 }

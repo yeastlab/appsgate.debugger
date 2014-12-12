@@ -15,8 +15,8 @@ Widgets.Switch = Widgets.Device.extend({
     onInitD3: function () {
         Widgets.Device.prototype.onInitD3.apply(this, arguments);
 
-        this.y = d3.scale.quantize()
-            .range([0, this.computed('svg.height')])
+        this.stateScale = d3.scale.quantize()
+            .range([4, this.computed('svg.height') - this.options.theme.device.state.border.width])
             .domain([false, true]);
 
         this.spikes = this.svg.append('g').attr({class: 'spikes'}).selectAll('line');
@@ -27,7 +27,8 @@ Widgets.Switch = Widgets.Device.extend({
     onDestroyD3: function() {
         Widgets.Device.prototype.onDestroyD3.apply(this, arguments);
 
-        delete this.y;
+        delete this.stateScale;
+
         this.spikes.remove(); delete this.spikes;
         this.border.remove(); delete this.border;
         this.border_extra.remove(); delete this.border_extra;
@@ -54,11 +55,11 @@ Widgets.Switch = Widgets.Device.extend({
             x1: function (d) {
                 return self.timescale(self.dateFn(d.timestamp))
             },
-            y1: self.y(false),
+            y1: self.stateScale(false),
             x2: function (d) {
                 return self.timescale(self.dateFn(d.timestamp))
             },
-            y2: self.y(true)
+            y2: self.stateScale(true)
         });
         spikes.attr({
             x1: function (d) {
@@ -124,7 +125,7 @@ Widgets.Switch = Widgets.Device.extend({
         }
 
         var spikes = this.spikes.data(
-                _.compact([focusedFrame, lastFocusedFrame]),
+            _.compact([focusedFrame, lastFocusedFrame]),
             function (d) {
                 return d.timestamp
             }

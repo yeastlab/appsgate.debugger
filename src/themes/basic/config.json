@@ -85,6 +85,7 @@
                 "width": "2px",
                 "color": "rgba(154, 207, 7, 0.8)",
                 "focused": {
+                    "width": "4px",
                     "color": "rgba(154, 207, 7, 1)"
                 }
             },
@@ -94,6 +95,23 @@
             "focused": {
                 "fill": {
                     "color": "rgba(154, 207, 7, 0.5)"
+                }
+            }
+        },
+        "value": {
+            "border": {
+                "width": "2px",
+                "color": "rgba(41, 81, 109, 0.8)",
+                "focused": {
+                    "color": "rgba(154, 207, 7, 1)"
+                }
+            },
+            "fill": {
+                "color": "rgba(41, 81, 109, 0.2)"
+            },
+            "focused": {
+                "fill": {
+                    "color": "rgba(41, 81, 109, 0.5)"
                 }
             }
         }

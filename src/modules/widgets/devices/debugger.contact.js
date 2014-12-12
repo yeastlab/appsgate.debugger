@@ -16,7 +16,7 @@ Widgets.Contact = Widgets.Device.extend({
         Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
 
         // Setup d3 functions
-        this.valueFn = function (d) {
+        this.stateFn = function (d) {
             try {
                 if (d.timestamp) {
                     return parseBoolean(d.data.event.state.value);
@@ -32,24 +32,25 @@ Widgets.Contact = Widgets.Device.extend({
     onInitD3: function () {
         Widgets.Device.prototype.onInitD3.apply(this, arguments);
 
-        this.y = d3.scale.ordinal()
+        this.stateScale = d3.scale.quantize()
             .range([0, this.computed('svg.height') - this.options.theme.device.state.border.width])
             .domain([false, true]);
 
-        this.initD3Chart();
+        this.initD3StateChart();
     },
 
     onDestroyD3: function() {
         Widgets.Device.prototype.onDestroyD3.apply(this, arguments);
 
-        delete this.y;
-        this.destroyD3Chart();
+        delete this.stateScale;
+
+        this.destroyD3StateChart();
     },
 
     onRender: function () {
         Widgets.Device.prototype.onRender.apply(this, arguments);
 
-        this.renderD3Chart();
+        this.renderD3StateChart();
     },
 
     onRulerFocusUpdate: function (coordinate, direction, timestamp, focusedFrame, lastFocusedFrame) {
@@ -62,8 +63,8 @@ Widgets.Contact = Widgets.Device.extend({
             this._$picto.attr({class: 'picto picto-contact_type'});
         }
 
-        this.updateD3ChartFocus(focusedFrame, lastFocusedFrame);
+        this.updateD3StateChartFocus(focusedFrame, lastFocusedFrame);
     }
 });
 
-_.extend(Widgets.Contact.prototype, Widgets.Mixins.Chart);
+_.extend(Widgets.Contact.prototype, Widgets.Mixins.StateChart);

@@ -15,7 +15,7 @@ Widgets.ColorLight = Widgets.Device.extend({
         Widgets.Device.prototype.onBeforeInitD3.apply(this, arguments);
 
         // Setup d3 value function
-        this.valueFn = function (d) {
+        this.stateFn = function (d) {
             try {
                 if (d.timestamp) {
                     return parseBoolean(d.data.event.state.state);
@@ -45,24 +45,25 @@ Widgets.ColorLight = Widgets.Device.extend({
     onInitD3: function () {
         Widgets.Device.prototype.onInitD3.apply(this, arguments);
 
-        this.y = d3.scale.ordinal()
+        this.stateScale = d3.scale.quantize()
             .range([0, this.computed('svg.height') - this.options.theme.device.state.border.width])
             .domain([false, true]);
 
-        this.initD3Chart();
+        this.initD3StateChart();
     },
 
     onDestroyD3: function() {
         Widgets.Device.prototype.onDestroyD3.apply(this, arguments);
 
-        delete this.y;
-        this.destroyD3Chart();
+        delete this.stateScale;
+
+        this.destroyD3StateChart();
     },
 
     onRender: function () {
         Widgets.Device.prototype.onRender.apply(this, arguments);
 
-        this.renderD3Chart();
+        this.renderD3StateChart();
     },
 
     onRulerFocusUpdate: function (coordinate, direction, timestamp, focusedFrame, lastFocusedFrame) {
@@ -70,7 +71,7 @@ Widgets.ColorLight = Widgets.Device.extend({
 
         if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {
             this._$picto.attr({class: 'picto picto-' + focusedFrame.data.event.picto}).css({
-                'background-color': this.valueFn(focusedFrame) ? this.colorFn(focusedFrame).toString() : 'transparent'
+                'background-color': this.stateFn(focusedFrame) ? this.colorFn(focusedFrame).toString() : 'transparent'
             });
         } else {
             // fallback
@@ -79,8 +80,8 @@ Widgets.ColorLight = Widgets.Device.extend({
             });
         }
 
-        this.updateD3ChartFocus(focusedFrame, lastFocusedFrame);
+        this.updateD3StateChartFocus(focusedFrame, lastFocusedFrame);
     }
 });
 
-_.extend(Widgets.ColorLight.prototype, Widgets.Mixins.Chart);
+_.extend(Widgets.ColorLight.prototype, Widgets.Mixins.StateChart);
