@@ -922,7 +922,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             // Find and attach it to the group to which it belongs.
             this._attach_widget_to_group(widget);
         } else {
-            Debugger.logger.error('Unable to create device of type #{type}', attributes);
+            Debugger.logger.error('Unable to create instance of type `#{type}` with:\n\n'+JSON.stringify(attributes), attributes);
         }
 
         return widget;
