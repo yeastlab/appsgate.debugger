@@ -179,13 +179,13 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                 }
             }
 
-            // Synchronize widgets with ruler position
-            this._notifyWidgetsOfRulerPosition();
-
             // When packet is an answer to a new request we toggle loading off.
             if (packet.request) {
                 this._toggleLoading(false);
             }
+
+            // Synchronize widgets with ruler position
+            this._notifyWidgetsOfRulerPosition();
         } catch (e) {
             Debugger.logger.error('Error when processing packet `#{packet}`. #{error} #{stacktrace}', {
                 packet: packet,
