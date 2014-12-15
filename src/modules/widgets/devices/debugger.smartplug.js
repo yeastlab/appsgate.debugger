@@ -33,7 +33,7 @@ Widgets.SmartPlug = Widgets.Device.extend({
         Widgets.Device.prototype.onInitD3.apply(this, arguments);
 
         this.y = d3.scale.ordinal()
-            .range([0, this.computed('svg.height') - 1])
+            .range([0, this.computed('svg.height') - this.options.theme.device.state.border.width])
             .domain([false, true]);
 
         this.initD3Chart();
@@ -52,7 +52,7 @@ Widgets.SmartPlug = Widgets.Device.extend({
         this.renderD3Chart();
     },
 
-    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
+    onRulerFocusUpdate: function (coordinate, direction, timestamp, focusedFrame, lastFocusedFrame) {
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
         if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {

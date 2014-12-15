@@ -103,6 +103,26 @@ module.exports = function (grunt) {
             }
         },
 
+        shared_config: {
+            basic: {
+                options: {
+                    name: 'THEMES_BASIC',
+                    cssFormat: 'underscore',
+                    jsFormat: 'underscore'
+                },
+                files: [
+                    {
+                        name: 'basic',
+                        src: 'src/themes/basic/config.json',
+                        dest: [
+                            '.tmp/gen/themes/basic/theme.config.scss',
+                            '.tmp/gen/themes/basic/theme.config.js'
+                        ]
+                    }
+                ]
+            }
+        },
+
         copy: {
             cssToScss: {
                 files: [
@@ -116,6 +136,16 @@ module.exports = function (grunt) {
                     }
                 ]
             },
+            iconsForServer: {
+                files: [
+                    {
+                        expand: true,
+                        cwd: 'src/themes/basic/images/icons',
+                        src: ['*.gif', '*.png', '*.jpg'],
+                        dest: '.tmp/gen/themes/basic/icons/'
+                    }
+                ]
+            },
             themes: {
                 files: [
                     {
@@ -123,6 +153,12 @@ module.exports = function (grunt) {
                         cwd: '.tmp/gen/themes/basic/pictograms',
                         src: ['*.png'],
                         dest: 'lib/themes/basic/pictograms/'
+                    },
+                    {
+                        expand: true,
+                        cwd: 'src/themes/basic/images/icons',
+                        src: ['*.gif', '*.png', '*.jpg'],
+                        dest: 'lib/themes/basic/icons/'
                     },
                     {
                         expand: true,
@@ -231,12 +267,16 @@ module.exports = function (grunt) {
                 tasks : ['build']
             },
             compass: {
-                files: ['<%= compass.options.sassDir %>/{,**/}*.{scss,sass}'],
+                files: ['<%= compass.options.sassDir %>/{,**/}*.{scss,sass}', '<%= compass.options.cssDir %>/{,**/}*.{scss,sass}'],
                 tasks: ['compass']
             },
             docco: {
                 files: ['lib/appsgate.debugger.js'],
                 tasks: ['docco']
+            },
+            config: {
+                files: ['src/themes/basic/config.json'],
+                tasks: ['shared_config']
             },
             livereload: {
                 options: {
@@ -264,6 +304,7 @@ module.exports = function (grunt) {
             'svgmerge',
             'variablize',
             'grunticon',
+            'shared_config',
             'copy:cssToScss',
             'preprocess',
             'template',
@@ -281,7 +322,9 @@ module.exports = function (grunt) {
                 'svgmerge',
                 'variablize',
                 'grunticon',
+                'shared_config',
                 'copy:cssToScss',
+                'copy:iconsForServer',
                 'preprocess',
                 'template',
                 'compass:server',

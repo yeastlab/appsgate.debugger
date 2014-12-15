@@ -16,12 +16,12 @@ Widgets.Switch = Widgets.Device.extend({
         Widgets.Device.prototype.onInitD3.apply(this, arguments);
 
         this.y = d3.scale.quantize()
-            .range([0, this.computed('svg.height') - 1])
+            .range([0, this.computed('svg.height')])
             .domain([false, true]);
 
         this.spikes = this.svg.append('g').attr({class: 'spikes'}).selectAll('line');
-        this.border = this.svg.insert('path', /* insert before */ '.markers').attr({class: 'border'});
-        this.border_extra = this.svg.insert('line', /* insert before */ '.markers').attr({class: 'border pending'});
+        this.border = this.svg.insert('path', /* insert before */ '.markers').attr({class: 'state border'});
+        this.border_extra = this.svg.insert('line', /* insert before */ '.markers').attr({class: 'state border pending'});
     },
 
     onDestroyD3: function() {
@@ -79,9 +79,9 @@ Widgets.Switch = Widgets.Device.extend({
             })
             .y(function (d) {
                 if (ensure(d, 'data.event.type', 'update')) {
-                    return self.computed('svg.height') - 1;
+                    return self.computed('svg.height') - self.options.theme.device.state.border.width/2;
                 } else {
-                    return self.computed('svg.height') + 2;
+                    return self.computed('svg.height') + self.options.theme.device.state.border.width;
                 }
             })
             .interpolate("step-after");
@@ -97,24 +97,24 @@ Widgets.Switch = Widgets.Device.extend({
                 x1: self.timescale(self.dateFn(last.timestamp)),
                 y1: function () {
                     if (ensure(last, 'data.event.type', 'update')) {
-                        return self.computed('svg.height') - 1;
+                        return self.computed('svg.height') - self.options.theme.device.state.border.width/2;
                     } else {
-                        return self.computed('svg.height') + 2;
+                        return self.computed('svg.height') + self.options.theme.device.state.border.width;
                     }
                 },
                 x2: self.timescale(self.dateFn(last.next.timestamp)),
                 y2: function () {
                     if (ensure(last, 'data.event.type', 'update')) {
-                        return self.computed('svg.height') - 1;
+                        return self.computed('svg.height') - self.options.theme.device.state.border.width/2;
                     } else {
-                        return self.computed('svg.height') + 2;
+                        return self.computed('svg.height') + self.options.theme.device.state.border.width;
                     }
                 }
             });
         }
     },
 
-    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
+    onRulerFocusUpdate: function (coordinate, direction, timestamp, focusedFrame, lastFocusedFrame) {
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
         if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {

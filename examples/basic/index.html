@@ -15,7 +15,8 @@
             baseUrl: '/',
             map: {
                 '*': {
-                    'underscore': 'lodash'
+                    'underscore': 'lodash',
+                    'i18n': 'i18next'
                 }
             },
             shim: {
@@ -29,28 +30,92 @@
                 'jquery': {
                     exports: '$'
                 },
+                'tinysort': ['jquery'],
                 'appsgate.debugger': {
-                    deps: ['jquery', 'jqueryui', 'backbone', 'lodash', 'd3']
+                    deps: ['jquery', 'jqueryui', 'backbone', 'lodash', 'd3', 'tinysort', "i18n"]
                 }
+            },
+            i18next: {
+                lng: 'fr',
+                fallbackLng: 'en',
+                lowerCaseLng : true,
+                useCookie    : false,
+                resGetPath: 'locales/__lng__/__ns__.json'
             },
             paths: {
                 'appsgate.debugger': 'appsgate.debugger.dev',
                 'backbone': 'components/backbone/backbone',
                 'lodash': 'components/lodash/dist/lodash',
                 'jquery': 'components/jquery/dist/jquery',
+                'tinysort': 'components/tinysort/dist/jquery.tinysort',
                 'jqueryui': 'components/jqueryui/jquery-ui',
-                'd3': 'components/d3/d3'
+                'd3': 'components/d3/d3',
+                'i18next': 'components/i18next/i18next.amd'
             }
         });
 
-        require(['appsgate.debugger'], function(Debugger) {
+        require(['appsgate.debugger', 'i18n'], function(Debugger, i18n) {
+            // setup i18n
+            i18n.init();
+
             var connector = new Debugger.Connector({
                 address: 'localhost',
                 port: '3000'
             });
 
             // setup dashboard
-            var dashboard = window.dashboard = new Debugger.Dashboard('#canvas');
+            var dashboard = window.dashboard = new Debugger.Dashboard('#canvas', {
+                d3: {
+                    // Define custom locale (based on http://www.localeplanet.com/icu/fr/)
+                    locale: {
+                        'decimal': ',',
+                        'thousands': ' ',
+                        'grouping': [3],
+                        'currency': ['€', ''],
+                        'dateTime': '%a %b %e %X %Y',
+                        'date': '%m/%d/%Y',
+                        'time': '%H:%M:%S',
+                        'periods': ['AM', 'PM'],
+                        'days': ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
+                        'shortDays': ['Dim.', 'Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.'],
+                        'months': ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
+                        'shortMonths': ['Janv.', 'Févr.', 'Mars', 'Avr.', 'Mai', 'Juin', 'Juil.', 'Aout', 'Sept.', 'Oct.', 'Nov.', 'Déc.']
+                    },
+                    // Define custom multi-time format
+                    timeFormatMulti: [
+                        ['.%L', function (d) {
+                            return d.getMilliseconds();
+                        }],
+                        [':%S', function (d) {
+                            return d.getSeconds();
+                        }],
+                        ['%H:%M', function (d) {
+                            return d.getMinutes();
+                        }],
+                        ['%Hh', function (d) {
+                            return d.getHours();
+                        }],
+                        ['%a %d', function (d) {
+                            return d.getDay() && d.getDate() != 1;
+                        }],
+                        ['%b %d', function (d) {
+                            return d.getDate() != 1;
+                        }],
+                        ['%B', function (d) {
+                            return d.getMonth();
+                        }],
+                        ['%Y', function () {
+                            return true;
+                        }]
+                    ]
+                },
+                i18n: {
+                    ns: 'translation'
+                },
+                livetrace: {
+                    delayBeforeFlush: 100000
+                }
+            });
             dashboard.connect(connector);
 
             // setup developer monitor
@@ -74,7 +139,7 @@
     <style type="text/css">
         body > .wrapper {
             width: 960px;
-            height: 100%;;
+            height: 100%;
             margin-left: auto;
             margin-right: auto;
         }

@@ -3,36 +3,7 @@
 @import 'compass/reset';
 
 @import '../../../.tmp/gen/themes/basic/grunticon/pictograms';
-
-//
-// Variables definition
-//
-
-$font_color:  rgba(76, 76, 76, 1);
-
-$device_state_border_width: 2px;
-$device_state_border_color: rgba(154, 207, 7, 0.8);
-$device_state_border_focused_color: rgba(154, 207, 7, 1);
-$device_state_fill_color: rgba(154, 207, 7, 0.2);
-$device_state_fill_focused_color: rgba(154, 207, 7, 0.5);
-
-$program_state_disabled_color: rgba(207, 60, 0, 0.3);
-$program_state_disabled_focused_color: rgba(207, 60, 0, 0.6);
-$program_state_enabled_color: rgba(154, 207, 7, 0.3);
-$program_state_enabled_focused_color: rgba(154, 207, 7, 0.6);
-$program_state_invalid_color: rgba(105, 105, 105, 0.3);
-$program_state_invalid_focused_color: rgba(105, 105, 105, 0.6);
-
-$status_border_width: 2px;
-$status_connection_border_color: rgba(154, 207, 7, 0.8);
-$status_connection_border_focused_color: rgba(154, 207, 7, 1);
-$status_problem_border_color: rgba(206, 96, 39, 0.80);
-$status_problem_border_focused_color: rgba(206, 96, 39, 1);
-$status_disconnection_border_color: rgba(206, 66, 66, 0.80);
-$status_disconnection_border_focused_color: rgba(206, 66, 66, 1);
-
-$focusline_color: rgba(105, 105, 105, 0.5);
-$focusline_selector_color: rgba(144, 195, 191, 0.5);
+@import '../../../.tmp/gen/themes/basic/theme.config';
 
 //
 // Layout definition
@@ -45,67 +16,91 @@ html, body {
 .dashboard {
     display: block;
     height: 100%;
-    overflow: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
     color: $font_color;
 
     .rule {
         z-index: 1000;
         position: absolute;
         display: block;
-        top: 0px;
-        height: 100%;
-        width: 30px;
-        background-color: #e0e0e0;
+        top: $dashboard_group_margin_top;
+        bottom: 0px;
+        border: none;
+        background-color: $ruler_fill_color;
         @include opacity(0.2);
 
-        &:hover {
-            @include opacity(0.7);
-        }
-
         .line {
+            z-index: 1010;
             position: absolute;
             top: 0px;
             bottom: 0px;
-            left: 50%;
-            width: 1px;
-            background-color: #696969;
+            left: $ruler_line_left;
+            width: $ruler_line_width;
+            background-color: $ruler_line_fill_color;
+        }
+
+        .marker {
+            z-index: 1020;
+            position: absolute;
+            width: 0;
+            height: 0;
+            left: #{($ruler_line_width - $ruler_width)*2};
+            border-left: #{$ruler_width*2} solid transparent;
+            border-right: #{$ruler_width*2} solid transparent;
+            &.top { top: 0; border-top: #{$ruler_width*2} solid $ruler_line_fill_color; }
+            &.bottom { bottom: 0; border-bottom: #{$ruler_width*2} solid $ruler_line_fill_color; }
+        }
+
+        &:hover, &:active {
+            @include opacity(0.7);
+            @include border-radius($ruler_border_width);
+            left: - $ruler_border_width/2;
+            border-left: $ruler_border_width solid $ruler_border_color;
+            border-right: $ruler_border_width solid $ruler_border_color;
+            cursor: col-resize;
         }
     }
 
-    .container {
+    & > header {
+        .element {
+            background-color: $focusline_fill_color;
+        }
+    }
+
+    .dashboard-loader {
+        height: 100%;
+
+        .icon-loading {
+            background-image: url("icons/loader.gif");
+            background-repeat: no-repeat;
+            background-position: center;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .group-container {
+        margin-top: $dashboard_group_container_margin_top;
+        margin-bottom: $dashboard_group_container_margin_bottom;
+        padding-top: $dashboard_group_container_padding_top;
+        padding-bottom: $dashboard_group_container_padding_bottom;
+
         .group {
             position: relative;
+            margin-top: $dashboard_group_container_margin_top;
+            margin-bottom: $dashboard_group_container_margin_bottom;
         }
 
-        .element {
-            &:nth-child(odd) {
-                background-color: #f1f1f1;
-            }
-            &:nth-child(even) {
-                background-color: #fafafa;
-            }
+        // matches elements that are displayed in group's header.
+        header .element {
+            background-color: $dashboard_group_header_fill_color;
+            font-weight: bold;
+            text-transform: uppercase;
 
-            .placeholder.aside {
-                position: absolute;
-                z-index: 500;
-            }
-
-            .placeholder.sidebar {
-                .title {
-                    float: left;
-                }
-                .picto {
-                    display: block;
-                    float: right;
-                    text-align: center;
-                }
+            .title {
+                width: $dashboard_sidebar_width - $element_title_padding_left;
             }
         }
-    }
 
-    .container, footer {
         .element {
             position: relative;
             overflow: hidden;
@@ -116,8 +111,49 @@ html, body {
         }
     }
 
-    footer {
+    .element-container {
+        .element {
+            .title {
+                padding-left: $element_title_padding_left;
+                width: $dashboard_sidebar_width - $dashboard_widget_height - 3*$element_title_padding_left;
+            }
+            .picto {
+                margin-left: $element_title_padding_left;
+                margin-right: $element_title_padding_left;
+            }
+            &:nth-child(odd) {
+                background-color: $element_odd_fill_color;
+            }
+            &:nth-child(even) {
+                background-color: $element_even_fill_color;
+            }
+        }
+    }
 
+    .group-container, .element-container {
+        position: relative;
+
+        .placeholder.aside {
+            position: absolute;
+            @include background-image(radial-gradient(center center, ellipse cover, #FFFFFF, rgba(255, 255, 255, 0.1)));
+            padding-left: $dashboard_aside_padding_left;
+            padding-right: $dashboard_aside_padding_right;
+            z-index: 500;
+        }
+
+        .placeholder.sidebar {
+            .title {
+                float: left;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .picto {
+                display: block;
+                float: right;
+                text-align: center;
+            }
+        }
     }
 }
 
@@ -126,10 +162,16 @@ html, body {
 //
 
 .axis path,
-.axis line {
+.axis line,
+.grid line {
     fill: none;
-    stroke: black;
+    stroke-width: $axis_stroke_width;
+    stroke: $axis_stroke_color;
     shape-rendering: crispEdges;
+}
+
+.grid path {
+    display: none;
 }
 
 .axis.top {
@@ -138,8 +180,7 @@ html, body {
     background-image: -moz-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
     background-image: -webkit-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
     background-image: -ms-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
-    top: 0px;
-    padding: 0 0 24px 0;
+    top: #{$axis_tick_height+$axis_label_height};
 }
 
 .axis.bottom {
@@ -149,21 +190,33 @@ html, body {
     background-image: -webkit-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
     background-image: -ms-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
     bottom: 0px;
-    padding: 24px 0 0 0;
 }
 
 .axis text {
+    fill: $font_color;
     font-family: sans-serif;
-    font-size: 11px;
+    font-size: $axis_label_height;
 }
 
-.area {
+.state.area {
     fill: $device_state_fill_color;
     stroke-width: 0;
 
     .focused {
-        fill: $device_state_fill_focused_color;
+        fill: $device_state_focused_fill_color;
     }
+}
+
+.state.border {
+    stroke: $device_state_border_color;
+    stroke-width: $device_state_border_width;
+    shape-rendering: crispEdges;
+    fill: transparent;
+}
+
+.state.border.pending {
+    stroke-linecap: 'square';
+    stroke-dasharray: 1, 2;
 }
 
 .program {
@@ -190,42 +243,43 @@ html, body {
 .status {
     line {
         stroke-width: $status_border_width;
+        stroke-linecap: round;
+        stroke-dasharray: 1, 5;
     }
 
     .connection {
         stroke: $status_connection_border_color;
     }
     .connection.focused {
-        stroke: $status_connection_border_focused_color;
+        stroke: $status_connection_focused_border_color;
     }
     .problem {
         stroke: $status_problem_border_color;
     }
     .problem.focused {
-        stroke: $status_problem_border_focused_color;
+        stroke: $status_problem_focused_border_color;
     }
     .disconnection {
         stroke: $status_disconnection_border_color;
     }
     .disconnection.focused {
-        stroke: $status_disconnection_border_focused_color;
+        stroke: $status_disconnection_focused_border_color;
     }
 }
 
+.focusline .area,
 .focusline rect {
-    fill: $focusline_color;
+    fill: $focusline_bar_fill_color;
+    stroke-width: 0;
 }
 
-.border {
-    stroke: $device_state_border_color;
-    stroke-width: $device_state_border_width;
-    shape-rendering: crispEdges;
-    fill: transparent;
+.focusline .border {
+    fill: none;
+    stroke: $focusline_bar_border_color;
 }
 
-.border.pending {
-    stroke-linecap: 'square';
-    stroke-dasharray: 1, 2;
+.ruler-shadow {
+    fill: $focusline_ruler_shadow_fill_color;
 }
 
 .spikes {
@@ -235,14 +289,29 @@ html, body {
     }
 
     .focused {
-        stroke-width: $device_state_border_width * 1.5;
+        stroke-width: $device_state_border_width;
         stroke: $device_state_border_focused_color;
     }
 }
 
 .brush {
     .extent {
-        fill: $focusline_selector_color;
+        fill: $focusline_selector_fill_color;
+        stroke: $focusline_selector_border_color;
+        stroke-width: $focusline_selector_border_width;
+        shape-rendering: crispEdges;
+    }
+
+    .resize rect.handle {
+        visibility: visible !important;
+        fill: $focusline_selector_handle_fill_color;
+    }
+
+    .mask {
+        fill: $focusline_selector_mask_fill_color;
+        stroke: $focusline_selector_mask_border_color;
+        stroke-width: $focusline_selector_mask_border_width;
+        shape-rendering: crispEdges;
     }
 }
 
@@ -252,4 +321,16 @@ html, body {
     z-index: 1000;
     stroke: rgba(255, 255, 255, 0.5);
     @include filter(drop-shadow(-5px -5px 5px #000));
+}
+
+//
+// Konami definition
+//
+
+.konami-background {
+    background: url(icons/konami.gif) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
 }

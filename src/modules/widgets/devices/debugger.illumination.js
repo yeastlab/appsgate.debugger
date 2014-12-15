@@ -1,10 +1,10 @@
-// Widgets.Temperature
-// -------------------
+// Widgets.Illumination
+// --------------------
 
-Widgets.Temperature = Widgets.Device.extend({
+Widgets.Illumination = Widgets.Device.extend({
 
     defaults: {
-        kind: 'temperature',
+        kind: 'illumination',
         buffer: {
             pairing: true,
             shadowing: true
@@ -15,7 +15,8 @@ Widgets.Temperature = Widgets.Device.extend({
         Widgets.Device.prototype.onInitUI.apply(this, arguments);
 
         this._$aside.css({
-            'line-height': parseInt(this.computed('svg.height')) + "px"
+            'line-height': parseInt(this.computed('svg.height')) + "px",
+            'visibility': 'visible'
         });
     },
 
@@ -45,7 +46,7 @@ Widgets.Temperature = Widgets.Device.extend({
         this.initD3Chart();
     },
 
-    onDestroyD3: function() {
+    onDestroyD3: function () {
         Widgets.Device.prototype.onDestroyD3.apply(this, arguments);
 
         delete this.y;
@@ -57,12 +58,19 @@ Widgets.Temperature = Widgets.Device.extend({
 
         var self = this;
 
-        this.y.domain(d3.extent(
+        // Compute new domain for sensor.
+        var domain = d3.extent(
             self.buffer.select(function (d) {
-                return ensure(d.data, 'event') && d.data.event.type == 'update'}
-            ), self.valueFn)
+                    return ensure(d.data, 'event') && d.data.event.type == 'update'
+                }
+            ),
+            self.valueFn
         );
 
+        // Update y scale.
+        this.y.domain([domain[0]*0.9, domain[1]*1.1]);
+
+        // Render the chart
         this.renderD3Chart();
     },
 
@@ -70,14 +78,17 @@ Widgets.Temperature = Widgets.Device.extend({
         Widgets.Device.prototype.onRulerFocusUpdate.apply(this, arguments);
 
         if (ensure(focusedFrame, 'data.event.type', 'update') && ensure(focusedFrame, 'data.event.picto')) {
-            this._$picto.attr({class: 'picto'}).text(this.valueFn(focusedFrame.data)+'°');
+            this._$picto.attr({class: 'picto picto-illumination_state_on'});
+            this._$aside.text(this.valueFn(focusedFrame.data) + 'Lux');
         } else {
             // fallback
-            this._$picto.attr({class: 'picto picto-temperature_type'}).text('');
+            this._$picto.attr({class: 'picto picto-illumination_type'});
+            this._$aside.text('');
         }
 
         this.updateD3ChartFocus(focusedFrame, lastFocusedFrame);
+        this.updateAsidePosition(this.timescale.range()[1] * coordinate, direction);
     }
 });
 
-_.extend(Widgets.Temperature.prototype, Widgets.Mixins.Chart, Widgets.Mixins.Focus);
+_.extend(Widgets.Illumination.prototype, Widgets.Mixins.Chart, Widgets.Mixins.Focus, Widgets.Mixins.Aside);

@@ -20,6 +20,7 @@ Widgets.Device = Widgets.Widget.extend({
         this.status = this.svg.append('g').attr({class: 'status'}).selectAll('line');
 
         this.initD3Markers();
+        this.initD3TimelineGrid();
     },
 
     onDestroyD3: function() {
@@ -30,6 +31,9 @@ Widgets.Device = Widgets.Widget.extend({
 
         // Destroy markers
         this.destroyD3Markers();
+
+        // Destroy TimelineGrid
+        this.destroyTimelineGrid();
     },
 
     onRender: function () {
@@ -56,14 +60,12 @@ Widgets.Device = Widgets.Widget.extend({
             x1: function (d) {
                 return self.timescale(self.dateFn(d.timestamp));
             },
-            y1: this.computed('svg.height') - 1,
+            y1: this.computed('svg.height') - self.options.theme.status.border.width/2,
             x2: function (d) {
                 return self.timescale(self.dateFn(d.next.timestamp));
             },
-            y2: this.computed('svg.height') - 1,
-            class: function (d) { return d.data.event.type },
-            'stroke-linecap': 'round',
-            'stroke-dasharray': '1, 5'
+            y2: this.computed('svg.height') - self.options.theme.status.border.width/2,
+            class: function (d) { return d.data.event.type }
         });
         status.attr({
             x1: function (d) {
@@ -72,17 +74,18 @@ Widgets.Device = Widgets.Widget.extend({
             x2: function (d) {
                 return self.timescale(self.dateFn(d.next.timestamp))
             },
-            class: function (d) { return d.data.event.type },
-            'stroke-linecap': 'round',
-            'stroke-dasharray': '1, 5'
+            class: function (d) { return d.data.event.type }
         });
         status.exit().remove();
 
         // Render markers
         this.renderD3Markers();
+
+        // Render the Timeline Grid
+        this.renderTimelineGrid();
     },
 
-    onRulerFocusUpdate: function (position, timestamp, focusedFrame, lastFocusedFrame) {
+    onRulerFocusUpdate: function (coordinate, direction, timestamp, focusedFrame, lastFocusedFrame) {
         Widgets.Widget.prototype.onRulerFocusUpdate.apply(this, arguments);
 
         var status = this.status.data(
@@ -98,9 +101,10 @@ Widgets.Device = Widgets.Widget.extend({
     }
 });
 
-_.extend(Widgets.Device.prototype, Widgets.Mixins.Markers, Widgets.Mixins.Focus);
+_.extend(Widgets.Device.prototype, Widgets.Mixins.TimelineGrid, Widgets.Mixins.Markers, Widgets.Mixins.Focus);
 
 // @include devices/debugger.temperature.js
+// @include devices/debugger.illumination.js
 // @include devices/debugger.switch.js
 // @include devices/debugger.contact.js
 // @include devices/debugger.keycardswitch.js

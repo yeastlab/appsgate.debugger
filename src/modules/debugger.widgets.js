@@ -10,7 +10,7 @@ var Widgets = Debugger.Widgets = {};
 Widgets.Widget = function (attributes, options) {
     var self = this;
 
-    this.attributes = defaultsDeep({}, attributes || {}, _.result(this, 'defaults'));
+    this.attributes = defaultsDeep(attributes || {}, _.result(this, 'defaults'));
 
     // Check if an *id* and a *kind* is given
     _.forEach(['id', 'kind'], function (key) {
@@ -39,27 +39,22 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
 
         // set default options in case some is omitted
         this.options = defaultsDeep({}, options, {
-            width: 960,
-            height: 100,
-            margin: {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 0
-            },
-            placeholder: {
-                sidebar: {
-                    width: 100
+            theme: THEMES_BASIC,
+            extra: {
+                svg: {
+                    innerMargin: {
+                        top: 0,
+                        left: 0,
+                        bottom: 0,
+                        right: 0
+                    }
                 }
-            },
-            ruler: {
-                width: 30
             }
         });
 
         // Compute expressions
-        this.compute('svg.width', 'this.options.width - this.options.placeholder.sidebar.width - this.options.margin.left - this.options.margin.right');
-        this.compute('svg.height', 'this.options.height - this.options.margin.top - this.options.margin.bottom');
+        this.compute('svg.width', 'this.options.theme.dashboard.width - this.options.extra.svg.innerMargin.left - this.options.extra.svg.innerMargin.right - this.options.theme.dashboard.sidebar.width - this.options.theme.dashboard.widget.margin.left - this.options.theme.dashboard.widget.margin.right');
+        this.compute('svg.height', 'this.options.theme.dashboard.widget.height - this.options.extra.svg.innerMargin.top - this.options.extra.svg.innerMargin.bottom - this.options.theme.dashboard.widget.margin.top - this.options.theme.dashboard.widget.margin.bottom');
 
         this._initUI();
     },
@@ -90,10 +85,10 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
             })
             .addClass('element')
             .css({
-                'margin-top': this.options.margin.top,
-                'margin-left': this.options.margin.left,
-                'margin-bottom': this.options.margin.bottom,
-                'margin-right': this.options.margin.right
+                'margin-top': this.options.theme.dashboard.widget.margin.top,
+                'margin-left': this.options.theme.dashboard.widget.margin.left,
+                'margin-bottom': this.options.theme.dashboard.widget.margin.bottom,
+                'margin-right': this.options.theme.dashboard.widget.margin.right
             })
             .append('<div class="placeholder sidebar"></div>')
             .append('<div class="placeholder d3"></div>')
@@ -102,23 +97,24 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
 
         // Create `sidebar` placeholder located at the left of d3 placeholder.
         this._$sidebar = this.$('.placeholder.sidebar').css({
-            'width': this.options.placeholder.sidebar.width,
-            'height': this.computed('svg.height')
+            'width': this.options.theme.dashboard.sidebar.width,
+            'height': this.computed('svg.height') + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom
         });
         this._$name = $('<div/>').addClass('title').css({
-            'line-height': this.computed('svg.height') + 'px'
+            'line-height': this.computed('svg.height') + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom + 'px'
         });
         this._$sidebar.append(this._$name);
 
         // Create `D3` placeholder (where we draw).
         this._$d3 = this.$('.placeholder.d3').css({
-            'width': this.computed('svg.width'),
-            'height': this.computed('svg.height')
+            'width': this.computed('svg.width') + this.options.extra.svg.innerMargin.left + this.options.extra.svg.innerMargin.right,
+            'height': this.computed('svg.height') + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom
         }).append(BASE_SVG);
 
         // Create `aside` placeholder located/floating around the ruler.
         this._$aside = this.$('.placeholder.aside').css({
-            'height': this.computed('svg.height')
+            'height': this.computed('svg.height') + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom,
+            'visibility': 'hidden'
         });
 
         // Notify that we are initializing UI.
@@ -139,6 +135,7 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
 
     // Internal method to initialize D3.
     _initD3: function(to) {
+        var self = this;
         var args = Array.prototype.slice.call(arguments);
 
         // Notify that we are going to initialized d3
@@ -146,18 +143,20 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
 
         // Initialize D3 SVG object.
         this.svg = d3.select(this._$d3[0]).select("svg").attr({
-            'width': this.computed('svg.width'),
-            'height': this.computed('svg.height')
-        }).append("g");
+            'width': this.computed('svg.width')  + this.options.extra.svg.innerMargin.left + this.options.extra.svg.innerMargin.right,
+            'height': this.computed('svg.height')  + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom
+        }).append("g")
+            .attr('transform', 'translate('+ this.options.extra.svg.innerMargin.left + ', '+ this.options.extra.svg.innerMargin.top +')');
 
         // Setup D3 functions.
         this.dateFn = function (timestamp) {
-            return new Date(parseInt(timestamp))
+            return new Date(timestamp)
         };
 
         // Setup D3 timescale.
         this.timescale = d3.time.scale()
-            .range([0, this.computed('svg.width')]);
+            .range([0, this.computed('svg.width')])
+            .clamp(true);
 
         // Notify that we are initializing d3
         this.triggerMethod.apply(this, ['init:d3'].concat(args));
@@ -264,6 +263,11 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
             this.buffer.push(data.timestamp, data.frame);
         }
 
+        // Clear data if live mode is one
+        if (options && options.live) {
+            this.buffer.flushBefore(focus[0]);
+        }
+
         // Notify that we are updating.
         this.triggerMethod.apply(this, ['frame:update'].concat(args));
 
@@ -300,25 +304,25 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
     onBeforeRulerFocusUpdate: function() { /* default implementation: do nothing */ },
 
     // Internal method to notifying widget that the ruler's focus just changed.
-    // `Position` is the position of the ruler in pixel.
+    // `Coordinate` is the coordinate of the ruler between [0..1].
     // `Direction` is the `left` or `right` direction in which the ruler was dragged.
-    rulerFocusChanged: function (position, direction, options) {
+    rulerFocusChanged: function (coordinate, direction, options) {
 
         // Set default options.
         options = defaultsDeep({}, options, {
-            delta: 2    // 2px left and 2px right
+            delta: this.options.theme.ruler.lookahead
         });
 
         // Keep track of last focused frame.
         this._lastFocusedFrame = this._focusedFrame;
 
         // Get exact matching timestamp.
-        var exactTimestamp = this.timescale.invert(parseInt(position)).getTime();
+        var exactTimestamp = this.timescale.invert(this.timescale.range()[1]*coordinate).getTime();
 
         // Get new focused frame.
-        this._focusedFrame = this._findFocusedFrame(position, direction, exactTimestamp, options.delta);
+        this._focusedFrame = this._findFocusedFrame(coordinate, direction, exactTimestamp, options.delta);
 
-        this.triggerMethod.apply(this, ['before:ruler:focus:update', position, exactTimestamp, this._focusedFrame, this._lastFocusedFrame]);
+        this.triggerMethod.apply(this, ['before:ruler:focus:update', coordinate, direction, exactTimestamp, this._focusedFrame, this._lastFocusedFrame]);
 
         // Update the name of his widget.
         if (ensure(this._focusedFrame, 'data.name')) {
@@ -327,19 +331,21 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
 
         // Hide widget if it does not have any state (meaning it disappeared).
         if (missing(this._focusedFrame, 'data.event.state')) {
-            this.$el.css('opacity', 0.1);
+            this.$el.css('opacity', this.options.theme.element.inactive.opacity);
         } else {
-            this.$el.css('opacity', 1);
+            this.$el.css('opacity', this.options.theme.element.active.opacity);
         }
 
-        this.triggerMethod.apply(this, ['ruler:focus:update', position, exactTimestamp, this._focusedFrame, this._lastFocusedFrame]);
+        this.triggerMethod.apply(this, ['ruler:focus:update', coordinate, direction, exactTimestamp, this._focusedFrame, this._lastFocusedFrame]);
     },
 
     // Handle `ruler:focus:update` event.
     onRulerFocusUpdate: function() { /* default implementation: do nothing */ },
 
     // Internal method used to find the focused frame.
-    _findFocusedFrame: function(position, direction, exactTimestamp, delta) {
+    _findFocusedFrame: function(coordinate, direction, exactTimestamp, delta) {
+        var position = this.timescale.range()[1] * coordinate;
+
         // Workout timestamp interval.
         var minTimestamp = this.timescale.invert(parseInt(position-delta)).getTime();
         var maxTimestamp = this.timescale.invert(parseInt(position+delta)).getTime();
@@ -367,9 +373,9 @@ Widgets.Mixins = {
     // **Chart mixin.**
     Chart: {
         initD3Chart: function () {
-            this.chart = this.svg.insert('g', '.markers').attr({class: 'area'}).selectAll('rect');
-            this.chart_border = this.svg.insert('path', '.markers').attr({class: 'border'});
-            this.chart_extra = this.svg.insert('line', /* insert before */ '.markers').attr({class: 'border pending'});
+            this.chart = this.svg.insert('g', '.markers').attr({class: 'state area'}).selectAll('rect');
+            this.chart_border = this.svg.insert('path', '.markers').attr({class: 'state border'});
+            this.chart_extra = this.svg.insert('line', /* insert before */ '.markers').attr({class: 'state border pending'});
         },
         renderD3Chart: function () {
             var self = this;
@@ -421,9 +427,9 @@ Widgets.Mixins = {
                 })
                 .y(function (d) {
                     if (ensure(d, 'data.event.type', 'update')) {
-                        return self.computed('svg.height') - self.y(self.valueFn(d.data)) - 1;
+                        return self.computed('svg.height') - self.y(self.valueFn(d.data)) - self.options.theme.device.state.border.width/2;
                     } else {
-                        return self.computed('svg.height') + 2;
+                        return self.computed('svg.height') + self.options.theme.device.state.border.width;
                     }
                 })
                 .interpolate("step-after");
@@ -441,17 +447,17 @@ Widgets.Mixins = {
                     x1: self.timescale(self.dateFn(last.timestamp)),
                     y1: function () {
                         if (ensure(last, 'data.event.type', 'update')) {
-                            return self.computed('svg.height') - self.y(self.valueFn(last.data)) - 1;
+                            return self.computed('svg.height') - self.y(self.valueFn(last.data)) - self.options.theme.device.state.border.width/2;
                         } else {
-                            return self.computed('svg.height') + 2;
+                            return self.computed('svg.height') + self.options.theme.device.state.border.width;
                         }
                     },
                     x2: self.timescale(self.dateFn(last.next.timestamp)),
                     y2: function () {
                         if (ensure(last, 'data.event.type', 'update')) {
-                            return self.computed('svg.height') - self.y(self.valueFn(last.data)) - 1;
+                            return self.computed('svg.height') - self.y(self.valueFn(last.data)) - self.options.theme.device.state.border.width/2;
                         } else {
-                            return self.computed('svg.height') + 2;
+                            return self.computed('svg.height') + self.options.theme.device.state.border.width;
                         }
                     }
                 });
@@ -512,8 +518,12 @@ Widgets.Mixins = {
                         }
                     },
                     'class': "decoration",
-                    //@todo scale(1.5)
-                    'transform': 'scale(1.5) translate(' + (-5 * 1.5) + ',' + (self.computed('svg.height') / 1.5 - (10 * 1.5)) + ')',
+                    'transform':
+                        'scale('+this.options.theme.pictogram.scale+') ' +
+                        'translate('+
+                        /* x */ -(this.options.theme.pictogram.dimension.height * this.options.theme.pictogram.scale)/2 + ',' +
+                        /* y */ (this.computed('svg.height') - this.options.theme.pictogram.dimension.height * this.options.theme.pictogram.scale)/2 +
+                        ')'
                 })
                 .on("click", function (d) {
                     self.triggerMethod.apply(this, ['marker:click'].concat([d.data.decorations]));
@@ -533,18 +543,21 @@ Widgets.Mixins = {
 
     // **Aside mixin.**
     Aside: {
-        updateAsidePosition: function(position) {
-            if (position < this.computed('svg.width') / 2) {
-                this._$aside.css({
-                    'left': position + this.options.placeholder.sidebar.width + this.options.ruler.width / 2,
-                    'right': 'auto'
-                });
+        updateAsidePosition: function(position, direction) {
+            var align = 'left';
+
+            if (position < this._$aside.width()) {
+                align = 'right';
+            } else if (position > this.computed('svg.width') - this._$aside.width()) {
+                align = 'left';
             } else {
-                this._$aside.css({
-                    'left': 'auto',
-                    'right': this.computed('svg.width') + this.options.ruler.width / 2 - position
-                });
+                align = direction == 'left' ? 'right' : 'left';
             }
+
+            this._$aside.css({
+                'left': align == 'right' ? position + this.options.theme.dashboard.sidebar.width + 2 * this.options.theme.ruler.width : 'auto',
+                'right': align == 'right' ? 'auto' : this.computed('svg.width') - position
+            });
         }
     },
 
@@ -553,6 +566,28 @@ Widgets.Mixins = {
         onFocusChange: function(brush) {
             this.timescale.domain(brush.empty() ? brush.x().domain() : brush.extent());
             this._render();
+        }
+    },
+
+    // **Timeline grid mixin.**
+    TimelineGrid: {
+        initD3TimelineGrid: function() {
+            this.xTimelineGridAxis = d3.svg.axis()
+                .scale(this.timescale)
+                .tickSize(this.computed('svg.height'))
+                .orient("bottom")
+                .tickFormat("");
+            this.xTimelineGridAxisGroup = this.svg.insert('g', '.markers').append("g")
+                .attr({'class': 'x grid left'})
+                .call(this.xTimelineGridAxis);
+        },
+
+        renderTimelineGrid: function () {
+            this.xTimelineGridAxisGroup.call(this.xTimelineGridAxis);
+        },
+
+        destroyTimelineGrid: function() {
+            this.xTimelineGridAxisGroup.remove(); delete this.xTimelineGridAxisGroup;
         }
     }
 };
