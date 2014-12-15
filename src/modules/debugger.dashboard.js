@@ -830,67 +830,43 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         var widget = undefined;
 
         // Define widget options.
-        var options = {
+        var widget_options = {
             theme: this.options.theme
+        };
+
+        // Define widget common attributes
+        var widget_attributes = {
+            id: attributes.id,
+            focused: attributes.id == self._getState('focus')
         };
 
         switch (what) {
             case 'program':
-                widget = new Debugger.Widgets.Program({
-                    id: attributes.id,
-                    focused: attributes.id == self._getState('focus')
-                }, options);
+                widget = new Debugger.Widgets.Program(widget_attributes, widget_options);
                 break;
             case 'device':
+                widget_attributes['type'] = attributes.type;
                 switch (attributes.type) {
                     case 'Temperature':
-                        widget = new Debugger.Widgets.Temperature({
-                            id: attributes.id,
-                            type: attributes.type,
-                            focused: attributes.id == self._getState('focus')
-                        }, options);
+                        widget = new Debugger.Widgets.Temperature(widget_attributes, widget_options);
                         break;
                     case 'Illumination':
-                        widget = new Debugger.Widgets.Illumination({
-                            id: attributes.id,
-                            type: attributes.type,
-                            focused: attributes.id == self._getState('focus')
-                        }, options);
+                        widget = new Debugger.Widgets.Illumination(widget_attributes, widget_options);
                         break;
                     case 'Switch':
-                        widget = new Debugger.Widgets.Switch({
-                            id: attributes.id,
-                            type: attributes.type,
-                            focused: attributes.id == self._getState('focus')
-                        }, options);
+                        widget = new Debugger.Widgets.Switch(widget_attributes, widget_options);
                         break;
                     case 'Contact':
-                        widget = new Debugger.Widgets.Contact({
-                            id: attributes.id,
-                            type: attributes.type,
-                            focused: attributes.id == self._getState('focus')
-                        }, options);
+                        widget = new Debugger.Widgets.Contact(widget_attributes, widget_options);
                         break;
                     case 'KeyCardSwitch':
-                        widget = new Debugger.Widgets.KeycardSwitch({
-                            id: attributes.id,
-                            type: attributes.type,
-                            focused: attributes.id == self._getState('focus')
-                        }, options);
+                        widget = new Debugger.Widgets.KeycardSwitch(widget_attributes, widget_options);
                         break;
                     case 'SmartPlug':
-                        widget = new Debugger.Widgets.SmartPlug({
-                            id: attributes.id,
-                            type: attributes.type,
-                            focused: attributes.id == self._getState('focus')
-                        }, options);
+                        widget = new Debugger.Widgets.SmartPlug(widget_attributes, widget_options);
                         break;
                     case 'ColorLight':
-                        widget = new Debugger.Widgets.ColorLight({
-                            id: attributes.id,
-                            type: attributes.type,
-                            focused: attributes.id == self._getState('focus')
-                        }, options);
+                        widget = new Debugger.Widgets.ColorLight(widget_attributes, widget_options);
                         break;
                 }
                 break;
