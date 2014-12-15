@@ -132,6 +132,20 @@
                 alert(textContent);
             });
 
+            // listen to widget focus request from dashboard
+            dashboard.on('eventline:focus:request', function(context, attributes) {
+                dashboard.requestHistoryTrace(context);
+            });
+
+            // listen to widget name click from dashboard
+            dashboard.on('eventline:name:click', function(context, attributes) {
+                if (attributes.kind == 'program') {
+                    console.log("Program with id "+attributes.id+" was clicked");
+                } else {
+                    console.log("Device of type "+attributes.type+" and with id "+attributes.id+" was clicked");
+                }
+            });
+
             // prompt server for initial history trace
             dashboard.requestInitialHistoryTrace();
         });

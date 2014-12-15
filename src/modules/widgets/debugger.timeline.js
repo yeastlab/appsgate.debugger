@@ -60,7 +60,7 @@ Widgets.Timeline = Widgets.Widget.extend({
         this.focusedTime.text(this.floatingTimeFormat(focusedTime));
 
         // Get focused time label width
-        var focusedTextLabelWidth = parseInt(this.focusedTime.style('width'));
+        var focusedTextLabelWidth = parseInt(this.focusedTime.node().getBBox().width);
 
         // Workout a nice placement for focused text label
         if (position - focusedTextLabelWidth / 2 < 0) {

@@ -186,14 +186,23 @@ _.extend(Debugger.Connector.prototype, Backbone.Events, {
     _unpackMessage: function(message) {
         var answer = JSON.parse(message);
         if (_.isObject(answer) && _.has(answer, 'request')) {
-            return {
+            var unpacked = {
                 request: answer.request,
                 data: answer.result.data,
                 eventline: answer.result.eventline,
                 groups: answer.result.groups
             };
+
+            if (answer.request.name == 'historytrace') {
+                unpacked['isHistoryTrace'] = true;
+            } else if (answer.request.name == 'livetrace') {
+                unpacked['isLiveTrace'] = true;
+            }
+
+            return unpacked;
         } else {
             return {
+                isLiveTrace: true,
                 request: null,
                 data: answer,
                 eventline: null,

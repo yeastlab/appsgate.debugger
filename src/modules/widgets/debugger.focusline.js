@@ -222,7 +222,7 @@ Widgets.Focusline = Widgets.Widget.extend({
     rulerFocusChanged: function (coordinate, direction, options) {
         var brushExtentOffset = parseInt(this.brushExtent.attr('x'));
         var brushExtentWidth = this.brush.empty()? this.computed('svg.width') : parseInt(this.brushExtent.attr('width'));
-        var focusedTextLabelWidth = parseInt(this.focusedTime.style('width'));
+        var focusedTextLabelWidth = parseInt(this.focusedTime.node().getBBox().width);
 
         // Workout ruler shadow placement and focused time
         var placement = brushExtentWidth * coordinate;

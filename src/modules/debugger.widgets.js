@@ -55,6 +55,7 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
         // Compute expressions
         this.compute('svg.width', 'this.options.theme.dashboard.width - this.options.extra.svg.innerMargin.left - this.options.extra.svg.innerMargin.right - this.options.theme.dashboard.sidebar.width - this.options.theme.dashboard.widget.margin.left - this.options.theme.dashboard.widget.margin.right');
         this.compute('svg.height', 'this.options.theme.dashboard.widget.height - this.options.extra.svg.innerMargin.top - this.options.extra.svg.innerMargin.bottom - this.options.theme.dashboard.widget.margin.top - this.options.theme.dashboard.widget.margin.bottom');
+        this.compute('widget.height', 'this.options.theme.dashboard.widget.height - this.options.theme.dashboard.widget.margin.top - this.options.theme.dashboard.widget.margin.bottom');
 
         this._initUI();
     },
@@ -100,20 +101,21 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
             'width': this.options.theme.dashboard.sidebar.width,
             'height': this.computed('svg.height') + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom
         });
+        this._$sidemenu = $('<div/>').addClass('menu');
         this._$name = $('<div/>').addClass('title').css({
             'line-height': this.computed('svg.height') + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom + 'px'
         });
-        this._$sidebar.append(this._$name);
+        this._$sidebar.append(this._$sidemenu, this._$name);
 
         // Create `D3` placeholder (where we draw).
         this._$d3 = this.$('.placeholder.d3').css({
             'width': this.computed('svg.width') + this.options.extra.svg.innerMargin.left + this.options.extra.svg.innerMargin.right,
-            'height': this.computed('svg.height') + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom
+            'height': this.computed('widget.height')
         }).append(BASE_SVG);
 
         // Create `aside` placeholder located/floating around the ruler.
         this._$aside = this.$('.placeholder.aside').css({
-            'height': this.computed('svg.height') + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom,
+            'height': this.computed('widget.height'),
             'visibility': 'hidden'
         });
 
@@ -144,7 +146,7 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
         // Initialize D3 SVG object.
         this.svg = d3.select(this._$d3[0]).select("svg").attr({
             'width': this.computed('svg.width')  + this.options.extra.svg.innerMargin.left + this.options.extra.svg.innerMargin.right,
-            'height': this.computed('svg.height')  + this.options.extra.svg.innerMargin.top + this.options.extra.svg.innerMargin.bottom
+            'height': this.computed('widget.height')
         }).append("g")
             .attr('transform', 'translate('+ this.options.extra.svg.innerMargin.left + ', '+ this.options.extra.svg.innerMargin.top +')');
 
@@ -370,18 +372,18 @@ _.extend(Widgets.Widget.prototype, Backbone.Events, {
 
 Widgets.Mixins = {
 
-    // **Chart mixin.**
-    Chart: {
-        initD3Chart: function () {
-            this.chart = this.svg.insert('g', '.markers').attr({class: 'state area'}).selectAll('rect');
-            this.chart_border = this.svg.insert('path', '.markers').attr({class: 'state border'});
-            this.chart_extra = this.svg.insert('line', /* insert before */ '.markers').attr({class: 'state border pending'});
+    // **StateChart mixin.**
+    StateChart: {
+        initD3StateChart: function () {
+            this.state_chart = this.svg.insert('g', '.markers').attr({class: 'state area'}).selectAll('rect');
+            this.state_chart_border = this.svg.insert('path', '.markers').attr({class: 'state border'});
+            this.state_chart_extra = this.svg.insert('line', /* insert before */ '.markers').attr({class: 'state border pending'});
         },
-        renderD3Chart: function () {
+        renderD3StateChart: function () {
             var self = this;
 
-            /* chart */
-            var chart = this.chart = this.chart.data(
+            /* state_chart */
+            var chart = this.state_chart = this.state_chart.data(
                 this.buffer.select(function (d) {
                     return ensure(d, 'data.event.type', 'update');
                 }),
@@ -395,13 +397,13 @@ Widgets.Mixins = {
                     return self.timescale(self.dateFn(d.timestamp));
                 },
                 y: function (d) {
-                    return self.computed('svg.height') - self.y(self.valueFn(d.data));
+                    return self.computed('svg.height') - self.stateScale(self.stateFn(d.data));
                 },
                 width: function (d) {
                     return self.timescale(self.dateFn(d.next.timestamp)) - self.timescale(self.dateFn(d.timestamp))
                 },
                 height: function (d) {
-                    return self.y(self.valueFn(d.data))
+                    return self.stateScale(self.stateFn(d.data))
                 }
             });
             chart.attr({
@@ -409,13 +411,13 @@ Widgets.Mixins = {
                     return self.timescale(self.dateFn(d.timestamp))
                 },
                 y: function (d) {
-                    return self.computed('svg.height') - self.y(self.valueFn(d.data))
+                    return self.computed('svg.height') - self.stateScale(self.stateFn(d.data))
                 },
                 width: function (d) {
                     return self.timescale(self.dateFn(d.next.timestamp)) - self.timescale(self.dateFn(d.timestamp))
                 },
                 height: function (d) {
-                    return self.y(self.valueFn(d.data))
+                    return self.stateScale(self.stateFn(d.data))
                 }
             });
             chart.exit().remove();
@@ -427,13 +429,13 @@ Widgets.Mixins = {
                 })
                 .y(function (d) {
                     if (ensure(d, 'data.event.type', 'update')) {
-                        return self.computed('svg.height') - self.y(self.valueFn(d.data)) - self.options.theme.device.state.border.width/2;
+                        return self.computed('svg.height') - self.stateScale(self.stateFn(d.data)) - self.options.theme.device.state.border.width/2;
                     } else {
                         return self.computed('svg.height') + self.options.theme.device.state.border.width;
                     }
                 })
                 .interpolate("step-after");
-            this.chart_border.datum(
+            this.state_chart_border.datum(
                 this.buffer.all(),
                 function (d) {
                     return d.timestamp
@@ -443,11 +445,11 @@ Widgets.Mixins = {
             /* extra border */
             var last = this.buffer.last();
             if (last) {
-                this.chart_extra.attr({
+                this.state_chart_extra.attr({
                     x1: self.timescale(self.dateFn(last.timestamp)),
                     y1: function () {
                         if (ensure(last, 'data.event.type', 'update')) {
-                            return self.computed('svg.height') - self.y(self.valueFn(last.data)) - self.options.theme.device.state.border.width/2;
+                            return self.computed('svg.height') - self.stateScale(self.stateFn(last.data)) - self.options.theme.device.state.border.width/2;
                         } else {
                             return self.computed('svg.height') + self.options.theme.device.state.border.width;
                         }
@@ -455,7 +457,7 @@ Widgets.Mixins = {
                     x2: self.timescale(self.dateFn(last.next.timestamp)),
                     y2: function () {
                         if (ensure(last, 'data.event.type', 'update')) {
-                            return self.computed('svg.height') - self.y(self.valueFn(last.data)) - self.options.theme.device.state.border.width/2;
+                            return self.computed('svg.height') - self.stateScale(self.stateFn(last.data)) - self.options.theme.device.state.border.width/2;
                         } else {
                             return self.computed('svg.height') + self.options.theme.device.state.border.width;
                         }
@@ -464,8 +466,8 @@ Widgets.Mixins = {
             }
         },
 
-        updateD3ChartFocus: function(focused, unfocused) {
-            var chart = this.chart.data(
+        updateD3StateChartFocus: function(focused, unfocused) {
+            var chart = this.state_chart.data(
                 _.compact([focused, unfocused]),
                 function (d) {
                     return d.timestamp
@@ -479,10 +481,142 @@ Widgets.Mixins = {
             });
         },
 
-        destroyD3Chart: function () {
-            this.chart.remove(); delete this.chart;
-            this.chart_border.remove(); delete this.chart_border;
-            this.chart_extra.remove(); delete this.chart_extra;
+        destroyD3StateChart: function () {
+            this.state_chart.remove(); delete this.state_chart;
+            this.state_chart_border.remove(); delete this.state_chart_border;
+            this.state_chart_extra.remove(); delete this.state_chart_extra;
+        }
+    },
+
+    // **StateChart mixin.**
+    ValueChart: {
+        initD3ValueChart: function () {
+            //this.value_chart = this.svg.insert('g', '.markers').attr({class: 'value area'}).selectAll('rect');
+            this.value_chart = this.svg.insert('path', '.markers').attr({class: 'value area'});
+            this.value_chart_border = this.svg.insert('path', '.markers').attr({class: 'value border'});
+            this.value_chart_extra = this.svg.insert('line', /* insert before */ '.markers').attr({class: 'value border pending'});
+        },
+        renderD3ValueChart: function () {
+            var self = this;
+
+            /* state_chart */
+            //var chart = this.value_chart = this.value_chart.data(
+            //    this.buffer.select(function (d) {
+            //        return ensure(d, 'data.event.type', 'update');
+            //    }),
+            //    function (d) {
+            //        return d.timestamp
+            //    }
+            //);
+            //
+            //chart.enter().append('rect').attr({
+            //    x: function (d) {
+            //        return self.timescale(self.dateFn(d.timestamp));
+            //    },
+            //    y: function (d) {
+            //        return self.computed('svg.height') - self.valueScale(self.valueFn(d.data));
+            //    },
+            //    width: function (d) {
+            //        return self.timescale(self.dateFn(d.next.timestamp)) - self.timescale(self.dateFn(d.timestamp))
+            //    },
+            //    height: function (d) {
+            //        return self.valueScale(self.valueFn(d.data))
+            //    }
+            //});
+            //chart.attr({
+            //    x: function (d) {
+            //        return self.timescale(self.dateFn(d.timestamp))
+            //    },
+            //    y: function (d) {
+            //        return self.computed('svg.height') - self.valueScale(self.valueFn(d.data))
+            //    },
+            //    width: function (d) {
+            //        return self.timescale(self.dateFn(d.next.timestamp)) - self.timescale(self.dateFn(d.timestamp))
+            //    },
+            //    height: function (d) {
+            //        return self.valueScale(self.valueFn(d.data))
+            //    }
+            //});
+            //chart.exit().remove();
+
+            var area = d3.svg.area()
+                .x(function(d) { return self.timescale(self.dateFn(d.timestamp)) })
+                .y0(function(d) { return self.computed('svg.height'); })
+                .y1(function(d) { return self.computed('svg.height') - self.valueScale(self.valueFn(d.data)); })
+                .interpolate("cardinal");
+            this.value_chart.datum(
+                this.buffer.select(function (d) {
+                    return ensure(d, 'data.event.type', 'update');
+                }),
+                function (d) {
+                    return d.timestamp
+                }
+            ).attr('d', area);
+
+            /* border */
+            var line = d3.svg.line()
+                .x(function (d) {
+                    return self.timescale(self.dateFn(d.timestamp));
+                })
+                .y(function (d) {
+                    if (ensure(d, 'data.event.type', 'update')) {
+                        return self.computed('svg.height') - self.valueScale(self.valueFn(d.data)) - self.options.theme.device.state.border.width/2;
+                    } else {
+                        return self.computed('svg.height') + self.options.theme.device.state.border.width;
+                    }
+                })
+                //.interpolate("step-after");
+                .interpolate("cardinal");
+            this.value_chart_border.datum(
+                this.buffer.all(),
+                function (d) {
+                    return d.timestamp
+                })
+                .attr("d", line);
+
+            /* extra border */
+            var last = this.buffer.last();
+            if (last) {
+                this.value_chart_extra.attr({
+                    x1: self.timescale(self.dateFn(last.timestamp)),
+                    y1: function () {
+                        if (ensure(last, 'data.event.type', 'update')) {
+                            return self.computed('svg.height') - self.valueScale(self.valueFn(last.data)) - self.options.theme.device.state.border.width/2;
+                        } else {
+                            return self.computed('svg.height') + self.options.theme.device.state.border.width;
+                        }
+                    },
+                    x2: self.timescale(self.dateFn(last.next.timestamp)),
+                    y2: function () {
+                        if (ensure(last, 'data.event.type', 'update')) {
+                            return self.computed('svg.height') - self.valueScale(self.valueFn(last.data)) - self.options.theme.device.state.border.width/2;
+                        } else {
+                            return self.computed('svg.height') + self.options.theme.device.state.border.width;
+                        }
+                    }
+                });
+            }
+        },
+
+        updateD3ValueChartFocus: function(focused, unfocused) {
+            //var chart = this.value_chart.data(
+            //    _.compact([focused, unfocused]),
+            //    function (d) {
+            //        return d.timestamp
+            //    }
+            //);
+            //
+            //chart.attr({
+            //    class: function(d) {
+            //        return d == focused ? 'focused' : ''
+            //    }
+            //});
+        },
+
+        destroyD3ValueChart: function () {
+            this.value_chart.remove(); delete this.value_chart;
+            this.value_chart_border.remove(); delete this.value_chart_border;
+            this.value_chart_extra.remove(); delete this.value_chart_extra;
         }
     },
 
@@ -543,6 +677,15 @@ Widgets.Mixins = {
 
     // **Aside mixin.**
     Aside: {
+        initUIAside: function() {
+            this._$aside.css({
+                'height': parseInt(this.computed('widget.height'))*0.6 + "px",
+                'margin-top': parseInt(this.computed('widget.height'))*0.2 + "px",
+                'line-height': parseInt(this.computed('widget.height'))*0.6 + "px",
+                'visibility': 'visible'
+            });
+        },
+
         updateAsidePosition: function(position, direction) {
             var align = 'left';
 
@@ -588,6 +731,42 @@ Widgets.Mixins = {
 
         destroyTimelineGrid: function() {
             this.xTimelineGridAxisGroup.remove(); delete this.xTimelineGridAxisGroup;
+        }
+    },
+
+    // **Eventline actions mixin.**
+    EventlineActions: {
+        initUIEventlineActions: function() {
+            var self = this;
+
+            // Button used to focus debugger on this eventline
+            this._$focusButton = $('<button type="button "></button>"').css({
+                'margin-top': this.computed('widget.height') * 0.1,
+                'height': this.computed('widget.height') * 0.8,
+                'margin-left': this.computed('widget.height') * 0.1,
+                'width': this.computed('widget.height') * 0.8,
+                'background-size': this.computed('widget.height')*0.6 + 'px ' + this.computed('widget.height')*0.6 + 'px'
+            }).addClass(
+                self.attributes.focused ? 'picto-focused' : 'picto-focus'
+            ).on('click', function() {
+                self.triggerMethod.apply(this, ['eventline:focus:request'].concat(self.attributes));
+            });
+
+            // Attach focus button to sidemenu
+            this._$sidemenu.append(this._$focusButton);
+
+            // Catch click on eventline name
+            this._$name.on('click', function(){
+                self.triggerMethod.apply(this, ['eventline:name:click'].concat(self.attributes));
+            }).css({
+                'cursor': 'pointer'
+            });
+        },
+
+        markAsFocused: function(focused) {
+            this.attributes.focused = focused;
+            this._$focusButton.addClass(focused ? 'picto-focused' : 'picto-focus');
+            this._$focusButton.removeClass(focused ? 'picto-focus' : 'picto-focused');
         }
     }
 };

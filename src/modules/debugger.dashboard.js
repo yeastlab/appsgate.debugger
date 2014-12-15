@@ -25,6 +25,9 @@ Debugger.Dashboard = function (selector, options) {
     // devices or programs in order to sync their timescale.
     this._domain = [_.now(), 0];
 
+    // Keep track of dashboard state
+    this._state = {};
+
     if (_.isFunction(this.initialize)) {
         this.initialize(selector, options);
     }
@@ -83,14 +86,18 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     // connector when new data are received.
     onPacketReceived: function(packet) {
         try {
+            if (!packet.isHistoryTrace && !packet.isLiveTrace) {
+                throw "Unsupported packet: packet must be of type history or live."
+            }
+
+            // If `packet` contains a request then we must reinitialize some stuff in the dashboard.
             if (packet.request) {
-                var updateFocusLine = false;
-
+                // If a global eventline is sent then we must reset the dashboard.
                 if (packet.eventline) {
-                    // Reset the dashboard on each request.
-                    this._reset('history');
+                    // Reset the dashboard whenever a new eventline is sent.
+                    this._reset(packet.isHistoryTrace ? 'history' : 'live');
 
-                    // Update focusline with received data.
+                    // Reload focusline with data from evenline.
                     // note: here we prevent rendering except for the last frame
                     var lastFrame = packet.eventline.pop();
 
@@ -102,17 +109,21 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                         this._update_focusline_with_frame(lastFrame);
                     }
                 } else {
-                    // Reset the dashboard on each request
-                    // this will not clean the focusline.
+                    // Otherwise clean the dashboard. This will not affect the focusline.
                     this._clean();
                 }
+            }
+
+            if (packet.isHistoryTrace) {
+                // This is an `historytrace` packet
 
                 // Set the default group demux.
                 if (packet.groups) {
                     this._demux = this._create_demux({grouping: packet.groups});
                 }
 
-                // Update widgets with received data.
+                // Update dashboad widgets with received data.
+                // note: here we prevent rendering except for the last frame
                 var lastFrame = packet.data.pop();
 
                 _.each(packet.data, function (frame) {
@@ -123,30 +134,26 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     this._update_all_with_frame(lastFrame);
                 }
 
-                // @todo document
-                if (lastFrame.timestamp < this._focus[1]) {
+                // Update shadows so that they span at least the focused range.
+                if (lastFrame && lastFrame.timestamp < this._focus[1]) {
                     this._update_focusline_with_frame({timestamp: this._focus[1]});
                     this._update_all_with_frame({timestamp: this._focus[1]});
                 }
 
-                // Unset loading mode
-                this._toggleLoading(false);
-
-                // Update widgets according to ruler
-                this._notifyWidgetsOfRulerPosition();
-            } else {
-                // Unset loading mode
-                this._toggleLoading(false);
-
-                // Reset the dashboard on each request.
-                if (this._requestedForLiveTrace) {
-                    this._reset('live');
-                    this._requestedForLiveTrace = false;
+                // If specified, mark focused widget as focused
+                if (packet.request.args.focus) {
+                    switch (packet.request.args.focusType) {
+                        case 'id':
+                            (this._devices[packet.request.args.focus] || this._programs[packet.request.args.focus]).markAsFocused(true);
+                        default:
+                            Debugger.logger.warn('Only focus by `id` is supported');
+                    }
                 }
+            } else if (packet.isLiveTrace) {
+                // This is a live stream packet
 
-                // This is a streaming packet
                 var data = packet.data;
-                if (data instanceof Array) {
+                if (data instanceof Array && data.length > 0) {
                     // Update widgets with received data.
                     // note: here we prevent rendering except for the last frame
                     var lastFrame = data.pop();
@@ -161,18 +168,23 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                         this._update_all_with_frame(lastFrame, {live: true});
                     }
 
-                    // @todo document
-                    if (lastFrame.timestamp < this._focus[1]) {
+                    // Update shadows so that they span at least the focused range.
+                    if (lastFrame && lastFrame.timestamp < this._focus[1]) {
                         this._update_focusline_with_frame({timestamp: this._focus[1]});
                         this._update_all_with_frame({timestamp: this._focus[1]});
                     }
-                } else {
+                } else if (!(data instanceof  Array)) {
                     this._update_focusline_with_frame(data, {live: true});
                     this._update_all_with_frame(data, {live: true});
                 }
+            }
 
-                // Update widgets according to ruler.
-                this._notifyWidgetsOfRulerPosition();
+            // Synchronize widgets with ruler position
+            this._notifyWidgetsOfRulerPosition();
+
+            // When packet is an answer to a new request we toggle loading off.
+            if (packet.request) {
+                this._toggleLoading(false);
             }
         } catch (e) {
             Debugger.logger.error('Error when processing packet `#{packet}`. #{error} #{stacktrace}', {
@@ -192,6 +204,8 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             brushResolution: this.options.theme.dashboard.width
         });
 
+        this._setState(params);
+
         if (this.connector) {
             this.connector.requestInitialHistoryTrace(params);
         }
@@ -201,18 +215,17 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     requestHistoryTrace: function(params) {
         params = _.defaults({}, params, {
             order: 'type',
+            from: this._domain[0],
+            to: this._domain[1],
+            screenResolution: this._focusline.computed('svg.width'),
+            selectorResolution: this.options.selector.resolution,
             brushResolution: this._focusline.computed('svg.width')
         });
 
+        this._setState(params);
+
         if (this.connector) {
-            this.connector.requestHistoryTrace({
-                screenResolution: this._focusline.computed('svg.width'),
-                selectorResolution: this.options.selector.resolution,
-                brushResolution: params.brushResolution,
-                order: params.order,
-                from: this._domain[0],
-                to: this._domain[1]
-            })
+            this.connector.requestHistoryTrace(params)
         }
     },
 
@@ -223,12 +236,53 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         });
 
         if (this.connector) {
-            this._requestedForLiveTrace = true;
             this.connector.requestLiveTrace(params);
         }
     },
 
     // **Private API**
+
+    _setState: function(key, value) {
+        var attr, attrs;
+        if (key == null) return this;
+
+        if (typeof key === 'object') {
+            attrs = key;
+        } else {
+            (attrs = {})[key] = value;
+        }
+
+        for (attr in attrs) {
+            this._state[attr] = attrs[attr];
+        }
+    },
+
+    _delState: function(key) {
+        var keys;
+        if (key == null) return this;
+
+        if (typeof key === 'object') {
+            keys = key;
+        } else {
+            keys = [key];
+        }
+
+        for (key in keys) {
+            delete this._state[keys[key]];
+        }
+    },
+
+    _getState: function(attr) {
+        return this._state[attr];
+    },
+
+    // Get zoom context
+    _getHistoryZoomContext: function() {
+        return _.pick(this._state, [
+            'from', 'to',
+            'screenResolution', 'selectorResolution', 'brushResolution',
+            'order', 'focus', 'focusType']);
+    },
 
     _init_konami: function() {
         var self = this;
@@ -364,11 +418,11 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
     // Brush resize callback.
     _onBrushResize: function(width) {
-        this.triggerMethod.apply(this, ['zoom:request'].concat([{
-            screenResolution: this._focusline.computed('svg.width'),
-            selectorResolution: this.options.selector.resolution,
-            brushResolution: width
-        }]));
+        // Keep track of new brush resolution
+        this._setState('brushResolution', width);
+
+        // Propagate event
+        this.triggerMethod.apply(this, ['zoom:request'].concat([this._getHistoryZoomContext()]));
     },
 
     // Widget marker click callback.
@@ -389,6 +443,42 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         // - textContent: String - concatenations of all decorations to plain text
         // - htmlContent: String - concatenations of all decorations to HTML
         this.triggerMethod.apply(this, ['marker:click'].concat([decorations, textContent, htmlContent]));
+    },
+
+    // Widget focus request
+    _onWidgetFocusRequest: function(attributes) {
+        var context =  {};
+        var markAsUnfocused = null;
+
+        if (attributes.focused) {
+            markAsUnfocused = attributes.id;
+            // Delete focus state variables
+            this._delState(['focus', 'focusType']);
+            // Build history context
+            context = _.merge(context, this._getHistoryZoomContext(), {
+                order: 'type'
+            });
+        } else {
+            markAsUnfocused = this._getState('focus');
+            // Build history context
+            context = _.merge(context, this._getHistoryZoomContext(), {
+                focus: attributes.id,
+                focusType: 'id',
+                order: 'dep'
+            });
+        }
+
+        if (markAsUnfocused) {
+            (this._devices[markAsUnfocused] || this._programs[markAsUnfocused]).markAsFocused(false);
+        }
+
+        this.triggerMethod.apply(this, ['eventline:focus:request'].concat([context, attributes]));
+    },
+
+    // Widget name click
+    _onWidgetNameClick: function(attributes) {
+        var context = this._getHistoryZoomContext();
+        this.triggerMethod.apply(this, ['eventline:name:click'].concat([context, attributes]));
     },
 
     // Notify widgets of the position of the ruler.
@@ -736,60 +826,47 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
     // Create a new `what` widget with given `attributes`.
     _create_widget: function (what, attributes) {
+        var self = this;
         var widget = undefined;
 
         // Define widget options.
-        var options = {
+        var widget_options = {
             theme: this.options.theme
+        };
+
+        // Define widget common attributes
+        var widget_attributes = {
+            id: attributes.id,
+            focused: attributes.id == self._getState('focus')
         };
 
         switch (what) {
             case 'program':
-                widget = new Debugger.Widgets.Program({id: attributes.id}, options);
+                widget = new Debugger.Widgets.Program(widget_attributes, widget_options);
                 break;
             case 'device':
+                widget_attributes['type'] = attributes.type;
                 switch (attributes.type) {
                     case 'Temperature':
-                        widget = new Debugger.Widgets.Temperature({
-                            id: attributes.id,
-                            type: attributes.type
-                        }, options);
+                        widget = new Debugger.Widgets.Temperature(widget_attributes, widget_options);
                         break;
                     case 'Illumination':
-                        widget = new Debugger.Widgets.Illumination({
-                            id: attributes.id,
-                            type: attributes.type
-                        }, options);
+                        widget = new Debugger.Widgets.Illumination(widget_attributes, widget_options);
                         break;
                     case 'Switch':
-                        widget = new Debugger.Widgets.Switch({
-                                id: attributes.id,
-                                type: attributes.type
-                            }, options);
+                        widget = new Debugger.Widgets.Switch(widget_attributes, widget_options);
                         break;
                     case 'Contact':
-                        widget = new Debugger.Widgets.Contact({
-                                id: attributes.id,
-                                type: attributes.type
-                            }, options);
+                        widget = new Debugger.Widgets.Contact(widget_attributes, widget_options);
                         break;
                     case 'KeyCardSwitch':
-                        widget = new Debugger.Widgets.KeycardSwitch({
-                                id: attributes.id,
-                                type: attributes.type
-                            }, options);
+                        widget = new Debugger.Widgets.KeycardSwitch(widget_attributes, widget_options);
                         break;
                     case 'SmartPlug':
-                        widget = new Debugger.Widgets.SmartPlug({
-                                id: attributes.id,
-                                type: attributes.type
-                            }, options);
+                        widget = new Debugger.Widgets.SmartPlug(widget_attributes, widget_options);
                         break;
                     case 'ColorLight':
-                        widget = new Debugger.Widgets.ColorLight({
-                                id: attributes.id,
-                                type: attributes.type
-                            }, options);
+                        widget = new Debugger.Widgets.ColorLight(widget_attributes, widget_options);
                         break;
                 }
                 break;
@@ -813,11 +890,13 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
             // Bind dashboard to widget events.
             this.listenTo(widget, 'marker:click', this._onWidgetMarkerClick);
+            this.listenTo(widget, 'eventline:focus:request', this._onWidgetFocusRequest);
+            this.listenTo(widget, 'eventline:name:click', this._onWidgetNameClick);
 
             // Find and attach it to the group to which it belongs.
             this._attach_widget_to_group(widget);
         } else {
-            Debugger.logger.error('Unable to create device of type #{type}', attributes);
+            Debugger.logger.error('Unable to create instance of type `#{type}` with:\n\n'+JSON.stringify(attributes), attributes);
         }
 
         return widget;
@@ -862,6 +941,6 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
         this.triggerMethod.apply(widget, ['detached'].concat(parent));
 
-        widget.$el.remove();
+        widget.$el.detach();
     }
 });
