@@ -86,14 +86,18 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     // connector when new data are received.
     onPacketReceived: function(packet) {
         try {
+            if (!packet.isHistoryTrace && !packet.isLiveTrace) {
+                throw "Unsupported packet: packet must be of type history or live."
+            }
+
+            // If `packet` contains a request then we must reinitialize some stuff in the dashboard.
             if (packet.request) {
-                var updateFocusLine = false;
-
+                // If a global eventline is sent then we must reset the dashboard.
                 if (packet.eventline) {
-                    // Reset the dashboard on each request.
-                    this._reset('history');
+                    // Reset the dashboard whenever a new eventline is sent.
+                    this._reset(packet.isHistoryTrace ? 'history' : 'live');
 
-                    // Update focusline with received data.
+                    // Reload focusline with data from evenline.
                     // note: here we prevent rendering except for the last frame
                     var lastFrame = packet.eventline.pop();
 
@@ -105,17 +109,21 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                         this._update_focusline_with_frame(lastFrame);
                     }
                 } else {
-                    // Reset the dashboard on each request
-                    // this will not clean the focusline.
+                    // Otherwise clean the dashboard. This will not affect the focusline.
                     this._clean();
                 }
+            }
+
+            if (packet.isHistoryTrace) {
+                // This is an `historytrace` packet
 
                 // Set the default group demux.
                 if (packet.groups) {
                     this._demux = this._create_demux({grouping: packet.groups});
                 }
 
-                // Update widgets with received data.
+                // Update dashboad widgets with received data.
+                // note: here we prevent rendering except for the last frame
                 var lastFrame = packet.data.pop();
 
                 _.each(packet.data, function (frame) {
@@ -126,8 +134,8 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     this._update_all_with_frame(lastFrame);
                 }
 
-                // @todo document
-                if (lastFrame.timestamp < this._focus[1]) {
+                // Update shadows so that they span at least the focused range.
+                if (lastFrame && lastFrame.timestamp < this._focus[1]) {
                     this._update_focusline_with_frame({timestamp: this._focus[1]});
                     this._update_all_with_frame({timestamp: this._focus[1]});
                 }
@@ -141,25 +149,11 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                             Debugger.logger.warn('Only focus by `id` is supported');
                     }
                 }
+            } else if (packet.isLiveTrace) {
+                // This is a live stream packet
 
-                // Unset loading mode
-                this._toggleLoading(false);
-
-                // Update widgets according to ruler
-                this._notifyWidgetsOfRulerPosition();
-            } else {
-                // Unset loading mode
-                this._toggleLoading(false);
-
-                // Reset the dashboard on each request.
-                if (this._requestedForLiveTrace) {
-                    this._reset('live');
-                    this._requestedForLiveTrace = false;
-                }
-
-                // This is a streaming packet
                 var data = packet.data;
-                if (data instanceof Array) {
+                if (data instanceof Array && data.length > 0) {
                     // Update widgets with received data.
                     // note: here we prevent rendering except for the last frame
                     var lastFrame = data.pop();
@@ -174,18 +168,23 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                         this._update_all_with_frame(lastFrame, {live: true});
                     }
 
-                    // @todo document
-                    if (lastFrame.timestamp < this._focus[1]) {
+                    // Update shadows so that they span at least the focused range.
+                    if (lastFrame && lastFrame.timestamp < this._focus[1]) {
                         this._update_focusline_with_frame({timestamp: this._focus[1]});
                         this._update_all_with_frame({timestamp: this._focus[1]});
                     }
-                } else {
+                } else if (!(data instanceof  Array)) {
                     this._update_focusline_with_frame(data, {live: true});
                     this._update_all_with_frame(data, {live: true});
                 }
+            }
 
-                // Update widgets according to ruler.
-                this._notifyWidgetsOfRulerPosition();
+            // Synchronize widgets with ruler position
+            this._notifyWidgetsOfRulerPosition();
+
+            // When packet is an answer to a new request we toggle loading off.
+            if (packet.request) {
+                this._toggleLoading(false);
             }
         } catch (e) {
             Debugger.logger.error('Error when processing packet `#{packet}`. #{error} #{stacktrace}', {
@@ -237,7 +236,6 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         });
 
         if (this.connector) {
-            this._requestedForLiveTrace = true;
             this.connector.requestLiveTrace(params);
         }
     },
