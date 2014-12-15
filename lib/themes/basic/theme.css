@@ -112,210 +112,370 @@ article, aside, details, figcaption, figure, footer, header, hgroup, main, menu,
 }
 
 /* line 17, grunticon/pictograms.scss */
+.picto-focus {
+  background-image: url("pictograms/focus.png");
+  background-repeat: no-repeat;
+}
+
+/* line 19, grunticon/pictograms.scss */
+.picto-focused {
+  background-image: url("pictograms/focused.png");
+  background-repeat: no-repeat;
+}
+
+/* line 21, grunticon/pictograms.scss */
+.picto-illumination_state_off {
+  background-image: url("pictograms/illumination_state_off.png");
+  background-repeat: no-repeat;
+}
+
+/* line 23, grunticon/pictograms.scss */
+.picto-illumination_state_on {
+  background-image: url("pictograms/illumination_state_on.png");
+  background-repeat: no-repeat;
+}
+
+/* line 25, grunticon/pictograms.scss */
+.picto-illumination_type {
+  background-image: url("pictograms/illumination_type.png");
+  background-repeat: no-repeat;
+}
+
+/* line 27, grunticon/pictograms.scss */
 .picto-keycardswitch_state_in {
   background-image: url("pictograms/keycardswitch_state_in.png");
   background-repeat: no-repeat;
 }
 
-/* line 19, grunticon/pictograms.scss */
+/* line 29, grunticon/pictograms.scss */
 .picto-keycardswitch_state_out {
   background-image: url("pictograms/keycardswitch_state_out.png");
   background-repeat: no-repeat;
 }
 
-/* line 21, grunticon/pictograms.scss */
+/* line 31, grunticon/pictograms.scss */
 .picto-keycardswitch_type {
   background-image: url("pictograms/keycardswitch_type.png");
   background-repeat: no-repeat;
 }
 
-/* line 23, grunticon/pictograms.scss */
+/* line 33, grunticon/pictograms.scss */
 .picto-magnify {
   background-image: url("pictograms/magnify.png");
   background-repeat: no-repeat;
 }
 
-/* line 25, grunticon/pictograms.scss */
+/* line 35, grunticon/pictograms.scss */
 .picto-program {
   background-image: url("pictograms/program.png");
   background-repeat: no-repeat;
 }
 
-/* line 27, grunticon/pictograms.scss */
+/* line 37, grunticon/pictograms.scss */
 .picto-programe {
   background-image: url("pictograms/programe.png");
   background-repeat: no-repeat;
 }
 
-/* line 29, grunticon/pictograms.scss */
+/* line 39, grunticon/pictograms.scss */
 .picto-read {
   background-image: url("pictograms/read.png");
   background-repeat: no-repeat;
 }
 
-/* line 31, grunticon/pictograms.scss */
-.picto-smartplug_off {
-  background-image: url("pictograms/smartplug_off.png");
+/* line 41, grunticon/pictograms.scss */
+.picto-single_switch_state_5 {
+  background-image: url("pictograms/single_switch_state_5.png");
   background-repeat: no-repeat;
 }
 
-/* line 33, grunticon/pictograms.scss */
-.picto-smartplug_on {
-  background-image: url("pictograms/smartplug_on.png");
+/* line 43, grunticon/pictograms.scss */
+.picto-single_switch_state_7 {
+  background-image: url("pictograms/single_switch_state_7.png");
   background-repeat: no-repeat;
 }
 
-/* line 35, grunticon/pictograms.scss */
+/* line 45, grunticon/pictograms.scss */
+.picto-smartplug_state_off {
+  background-image: url("pictograms/smartplug_state_off.png");
+  background-repeat: no-repeat;
+}
+
+/* line 47, grunticon/pictograms.scss */
+.picto-smartplug_state_on {
+  background-image: url("pictograms/smartplug_state_on.png");
+  background-repeat: no-repeat;
+}
+
+/* line 49, grunticon/pictograms.scss */
 .picto-smartplug_type {
   background-image: url("pictograms/smartplug_type.png");
   background-repeat: no-repeat;
 }
 
-/* line 37, grunticon/pictograms.scss */
+/* line 51, grunticon/pictograms.scss */
 .picto-switch_state_1 {
   background-image: url("pictograms/switch_state_1.png");
   background-repeat: no-repeat;
 }
 
-/* line 39, grunticon/pictograms.scss */
+/* line 53, grunticon/pictograms.scss */
 .picto-switch_state_3 {
   background-image: url("pictograms/switch_state_3.png");
   background-repeat: no-repeat;
 }
 
-/* line 41, grunticon/pictograms.scss */
+/* line 55, grunticon/pictograms.scss */
 .picto-switch_state_5 {
   background-image: url("pictograms/switch_state_5.png");
   background-repeat: no-repeat;
 }
 
-/* line 43, grunticon/pictograms.scss */
+/* line 57, grunticon/pictograms.scss */
 .picto-switch_state_7 {
   background-image: url("pictograms/switch_state_7.png");
   background-repeat: no-repeat;
 }
 
-/* line 45, grunticon/pictograms.scss */
+/* line 59, grunticon/pictograms.scss */
 .picto-switch_type {
   background-image: url("pictograms/switch_type.png");
   background-repeat: no-repeat;
 }
 
-/* line 47, grunticon/pictograms.scss */
+/* line 61, grunticon/pictograms.scss */
+.picto-temperature_state_off {
+  background-image: url("pictograms/temperature_state_off.png");
+  background-repeat: no-repeat;
+}
+
+/* line 63, grunticon/pictograms.scss */
+.picto-temperature_state_on {
+  background-image: url("pictograms/temperature_state_on.png");
+  background-repeat: no-repeat;
+}
+
+/* line 65, grunticon/pictograms.scss */
 .picto-temperature_type {
   background-image: url("pictograms/temperature_type.png");
   background-repeat: no-repeat;
 }
 
-/* line 49, grunticon/pictograms.scss */
+/* line 67, grunticon/pictograms.scss */
 .picto-user {
   background-image: url("pictograms/user.png");
   background-repeat: no-repeat;
 }
 
-/* line 51, grunticon/pictograms.scss */
+/* line 69, grunticon/pictograms.scss */
 .picto-write {
   background-image: url("pictograms/write.png");
   background-repeat: no-repeat;
 }
 
-/* line 41, ../../../../src/themes/basic/theme.scss */
+/* line 12, ../../../../src/themes/basic/theme.scss */
 html, body {
   height: 100%;
 }
 
-/* line 45, ../../../../src/themes/basic/theme.scss */
+/* line 16, ../../../../src/themes/basic/theme.scss */
 .dashboard {
   display: block;
   height: 100%;
-  overflow: auto;
-  overflow-x: hidden;
-  overflow-y: auto;
   color: #4c4c4c;
 }
-/* line 53, ../../../../src/themes/basic/theme.scss */
+/* line 21, ../../../../src/themes/basic/theme.scss */
 .dashboard .rule {
   z-index: 1000;
   position: absolute;
   display: block;
-  top: 0px;
-  height: 100%;
-  width: 30px;
+  top: 20px;
+  bottom: 0px;
+  border: none;
   background-color: #e0e0e0;
   filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=20);
   opacity: 0.2;
 }
-/* line 63, ../../../../src/themes/basic/theme.scss */
-.dashboard .rule:hover {
-  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=70);
-  opacity: 0.7;
-}
-/* line 67, ../../../../src/themes/basic/theme.scss */
+/* line 31, ../../../../src/themes/basic/theme.scss */
 .dashboard .rule .line {
+  z-index: 1010;
   position: absolute;
   top: 0px;
   bottom: 0px;
-  left: 50%;
+  left: 2px;
   width: 1px;
   background-color: #696969;
 }
-/* line 78, ../../../../src/themes/basic/theme.scss */
-.dashboard .container .group {
-  position: relative;
-}
-/* line 83, ../../../../src/themes/basic/theme.scss */
-.dashboard .container .element:nth-child(odd) {
-  background-color: #f1f1f1;
-}
-/* line 86, ../../../../src/themes/basic/theme.scss */
-.dashboard .container .element:nth-child(even) {
-  background-color: #fafafa;
-}
-/* line 90, ../../../../src/themes/basic/theme.scss */
-.dashboard .container .element .placeholder.aside {
+/* line 41, ../../../../src/themes/basic/theme.scss */
+.dashboard .rule .marker {
+  z-index: 1020;
   position: absolute;
-  z-index: 500;
+  width: 0;
+  height: 0;
+  left: -8px;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
 }
-/* line 96, ../../../../src/themes/basic/theme.scss */
-.dashboard .container .element .placeholder.sidebar .title {
-  float: left;
+/* line 49, ../../../../src/themes/basic/theme.scss */
+.dashboard .rule .marker.top {
+  top: 0;
+  border-top: 10px solid #696969;
+}
+/* line 50, ../../../../src/themes/basic/theme.scss */
+.dashboard .rule .marker.bottom {
+  bottom: 0;
+  border-bottom: 10px solid #696969;
+}
+/* line 53, ../../../../src/themes/basic/theme.scss */
+.dashboard .rule:hover, .dashboard .rule:active {
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=70);
+  opacity: 0.7;
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+  left: -1px;
+  border-left: 2px solid transparent;
+  border-right: 2px solid transparent;
+  cursor: col-resize;
+}
+/* line 64, ../../../../src/themes/basic/theme.scss */
+.dashboard > header .element {
+  background-color: transparent;
+}
+/* line 69, ../../../../src/themes/basic/theme.scss */
+.dashboard .dashboard-loader {
+  height: 100%;
+}
+/* line 72, ../../../../src/themes/basic/theme.scss */
+.dashboard .dashboard-loader .icon-loading {
+  background-image: url("icons/loader.gif");
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 100%;
+  height: 100%;
+}
+/* line 81, ../../../../src/themes/basic/theme.scss */
+.dashboard .group-container {
+  margin-top: 30px;
+  margin-bottom: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+/* line 87, ../../../../src/themes/basic/theme.scss */
+.dashboard .group-container .group {
+  position: relative;
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+/* line 94, ../../../../src/themes/basic/theme.scss */
+.dashboard .group-container header .element {
+  background-color: transparent;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 /* line 99, ../../../../src/themes/basic/theme.scss */
-.dashboard .container .element .placeholder.sidebar .picto {
+.dashboard .group-container header .element .title {
+  width: 240px;
+}
+/* line 104, ../../../../src/themes/basic/theme.scss */
+.dashboard .group-container .element {
+  position: relative;
+  overflow: hidden;
+}
+/* line 108, ../../../../src/themes/basic/theme.scss */
+.dashboard .group-container .element .placeholder {
+  float: left;
+}
+/* line 116, ../../../../src/themes/basic/theme.scss */
+.dashboard .element-container .element .title {
+  padding-left: 10px;
+  width: 165px;
+}
+/* line 120, ../../../../src/themes/basic/theme.scss */
+.dashboard .element-container .element .picto {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+/* line 124, ../../../../src/themes/basic/theme.scss */
+.dashboard .element-container .element:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+/* line 127, ../../../../src/themes/basic/theme.scss */
+.dashboard .element-container .element:nth-child(even) {
+  background-color: #fafafa;
+}
+/* line 133, ../../../../src/themes/basic/theme.scss */
+.dashboard .group-container, .dashboard .element-container {
+  position: relative;
+}
+/* line 136, ../../../../src/themes/basic/theme.scss */
+.dashboard .group-container .placeholder.aside, .dashboard .element-container .placeholder.aside {
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  position: absolute;
+  color: #ffffff;
+  background-color: #30404f;
+  font-size: 0.7em;
+  padding-left: 5px;
+  padding-right: 5px;
+  z-index: 500;
+}
+/* line 148, ../../../../src/themes/basic/theme.scss */
+.dashboard .group-container .placeholder.sidebar .menu, .dashboard .element-container .placeholder.sidebar .menu {
+  float: left;
+  width: 25px;
+}
+/* line 151, ../../../../src/themes/basic/theme.scss */
+.dashboard .group-container .placeholder.sidebar .menu button, .dashboard .element-container .placeholder.sidebar .menu button {
+  display: block;
+  padding: 1px;
+  border-radius: 3px;
+  background-color: #fff;
+  background-position: center;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+/* line 161, ../../../../src/themes/basic/theme.scss */
+.dashboard .group-container .placeholder.sidebar .title, .dashboard .element-container .placeholder.sidebar .title {
+  float: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* line 167, ../../../../src/themes/basic/theme.scss */
+.dashboard .group-container .placeholder.sidebar .picto, .dashboard .element-container .placeholder.sidebar .picto {
   display: block;
   float: right;
   text-align: center;
 }
-/* line 109, ../../../../src/themes/basic/theme.scss */
-.dashboard .container .element, .dashboard footer .element {
-  position: relative;
-  overflow: hidden;
-}
-/* line 113, ../../../../src/themes/basic/theme.scss */
-.dashboard .container .element .placeholder, .dashboard footer .element .placeholder {
-  float: left;
-}
 
-/* line 128, ../../../../src/themes/basic/theme.scss */
+/* line 180, ../../../../src/themes/basic/theme.scss */
 .axis path,
-.axis line {
+.axis line,
+.grid line {
   fill: none;
-  stroke: black;
+  stroke-width: 1px;
+  stroke: rgba(0, 0, 0, 0.1);
   shape-rendering: crispEdges;
 }
 
-/* line 135, ../../../../src/themes/basic/theme.scss */
+/* line 189, ../../../../src/themes/basic/theme.scss */
+.grid path {
+  display: none;
+}
+
+/* line 193, ../../../../src/themes/basic/theme.scss */
 .axis.top {
   background-image: linear-gradient(to bottom, #ffffff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -o-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -moz-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -webkit-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -ms-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
-  top: 0px;
-  padding: 0 0 24px 0;
+  top: 16px;
 }
 
-/* line 145, ../../../../src/themes/basic/theme.scss */
+/* line 202, ../../../../src/themes/basic/theme.scss */
 .axis.bottom {
   background-image: linear-gradient(to top, #ffffff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -o-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
@@ -323,115 +483,168 @@ html, body {
   background-image: -webkit-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -ms-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   bottom: 0px;
-  padding: 24px 0 0 0;
 }
 
-/* line 155, ../../../../src/themes/basic/theme.scss */
+/* line 211, ../../../../src/themes/basic/theme.scss */
 .axis text {
+  fill: #4c4c4c;
   font-family: sans-serif;
   font-size: 11px;
 }
 
-/* line 160, ../../../../src/themes/basic/theme.scss */
-.area {
+/* line 217, ../../../../src/themes/basic/theme.scss */
+.state.area {
   fill: rgba(154, 207, 7, 0.2);
   stroke-width: 0;
 }
-/* line 164, ../../../../src/themes/basic/theme.scss */
-.area .focused {
+/* line 221, ../../../../src/themes/basic/theme.scss */
+.state.area .focused {
   fill: rgba(154, 207, 7, 0.5);
 }
 
-/* line 170, ../../../../src/themes/basic/theme.scss */
-.program .disabled {
-  fill: rgba(207, 60, 0, 0.3);
-}
-/* line 173, ../../../../src/themes/basic/theme.scss */
-.program .disabled.focused {
-  fill: rgba(207, 60, 0, 0.6);
-}
-/* line 176, ../../../../src/themes/basic/theme.scss */
-.program .enabled {
-  fill: rgba(154, 207, 7, 0.3);
-}
-/* line 179, ../../../../src/themes/basic/theme.scss */
-.program .enabled.focused {
-  fill: rgba(154, 207, 7, 0.6);
-}
-/* line 182, ../../../../src/themes/basic/theme.scss */
-.program .invalid {
-  fill: rgba(105, 105, 105, 0.3);
-}
-/* line 185, ../../../../src/themes/basic/theme.scss */
-.program .invalid.focused {
-  fill: rgba(105, 105, 105, 0.6);
-}
-
-/* line 191, ../../../../src/themes/basic/theme.scss */
-.status line {
-  stroke-width: 2px;
-}
-/* line 195, ../../../../src/themes/basic/theme.scss */
-.status .connection {
-  stroke: rgba(154, 207, 7, 0.8);
-}
-/* line 198, ../../../../src/themes/basic/theme.scss */
-.status .connection.focused {
-  stroke: #9acf07;
-}
-/* line 201, ../../../../src/themes/basic/theme.scss */
-.status .problem {
-  stroke: rgba(206, 96, 39, 0.8);
-}
-/* line 204, ../../../../src/themes/basic/theme.scss */
-.status .problem.focused {
-  stroke: #ce6027;
-}
-/* line 207, ../../../../src/themes/basic/theme.scss */
-.status .disconnection {
-  stroke: rgba(206, 66, 66, 0.8);
-}
-/* line 210, ../../../../src/themes/basic/theme.scss */
-.status .disconnection.focused {
-  stroke: #ce4242;
-}
-
-/* line 215, ../../../../src/themes/basic/theme.scss */
-.focusline rect {
-  fill: rgba(105, 105, 105, 0.5);
-}
-
-/* line 219, ../../../../src/themes/basic/theme.scss */
-.border {
+/* line 226, ../../../../src/themes/basic/theme.scss */
+.state.border {
   stroke: rgba(154, 207, 7, 0.8);
   stroke-width: 2px;
   shape-rendering: crispEdges;
   fill: transparent;
 }
 
-/* line 226, ../../../../src/themes/basic/theme.scss */
-.border.pending {
+/* line 233, ../../../../src/themes/basic/theme.scss */
+.state.border.pending {
   stroke-linecap: 'square';
   stroke-dasharray: 1, 2;
 }
 
-/* line 232, ../../../../src/themes/basic/theme.scss */
+/* line 238, ../../../../src/themes/basic/theme.scss */
+.value.area {
+  fill: rgba(41, 81, 109, 0.2);
+  stroke-width: 0;
+}
+/* line 242, ../../../../src/themes/basic/theme.scss */
+.value.area .focused {
+  fill: rgba(41, 81, 109, 0.5);
+}
+
+/* line 247, ../../../../src/themes/basic/theme.scss */
+.value.border {
+  stroke: rgba(41, 81, 109, 0.8);
+  stroke-width: 2px;
+  fill: transparent;
+}
+
+/* line 253, ../../../../src/themes/basic/theme.scss */
+.value.border.pending {
+  stroke-linecap: 'square';
+  stroke-dasharray: 1, 2;
+}
+
+/* line 259, ../../../../src/themes/basic/theme.scss */
+.program .disabled {
+  fill: rgba(105, 105, 105, 0.3);
+}
+/* line 262, ../../../../src/themes/basic/theme.scss */
+.program .disabled.focused {
+  fill: rgba(105, 105, 105, 0.6);
+}
+/* line 265, ../../../../src/themes/basic/theme.scss */
+.program .enabled {
+  fill: rgba(154, 207, 7, 0.3);
+}
+/* line 268, ../../../../src/themes/basic/theme.scss */
+.program .enabled.focused {
+  fill: rgba(154, 207, 7, 0.6);
+}
+/* line 271, ../../../../src/themes/basic/theme.scss */
+.program .invalid {
+  fill: rgba(207, 60, 0, 0.3);
+}
+/* line 274, ../../../../src/themes/basic/theme.scss */
+.program .invalid.focused {
+  fill: rgba(207, 60, 0, 0.6);
+}
+
+/* line 280, ../../../../src/themes/basic/theme.scss */
+.status line {
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-dasharray: 1, 5;
+}
+/* line 286, ../../../../src/themes/basic/theme.scss */
+.status .connection {
+  stroke: rgba(154, 207, 7, 0.8);
+}
+/* line 289, ../../../../src/themes/basic/theme.scss */
+.status .connection.focused {
+  stroke: #9acf07;
+}
+/* line 292, ../../../../src/themes/basic/theme.scss */
+.status .problem {
+  stroke: rgba(206, 96, 39, 0.8);
+}
+/* line 295, ../../../../src/themes/basic/theme.scss */
+.status .problem.focused {
+  stroke: #ce6027;
+}
+/* line 298, ../../../../src/themes/basic/theme.scss */
+.status .disconnection {
+  stroke: rgba(206, 66, 66, 0.8);
+}
+/* line 301, ../../../../src/themes/basic/theme.scss */
+.status .disconnection.focused {
+  stroke: #ce4242;
+}
+
+/* line 306, ../../../../src/themes/basic/theme.scss */
+.focusline .area,
+.focusline rect {
+  fill: rgba(105, 105, 105, 0.3);
+  stroke-width: 0;
+}
+
+/* line 312, ../../../../src/themes/basic/theme.scss */
+.focusline .border {
+  fill: none;
+  stroke: rgba(105, 0, 105, 0.5);
+}
+
+/* line 317, ../../../../src/themes/basic/theme.scss */
+.ruler-shadow {
+  fill: rgba(255, 0, 0, 0.3);
+}
+
+/* line 322, ../../../../src/themes/basic/theme.scss */
 .spikes line {
   stroke-width: 2px;
   stroke: rgba(154, 207, 7, 0.8);
 }
-/* line 237, ../../../../src/themes/basic/theme.scss */
+/* line 327, ../../../../src/themes/basic/theme.scss */
 .spikes .focused {
-  stroke-width: 3px;
+  stroke-width: 4px;
   stroke: #9acf07;
 }
 
-/* line 244, ../../../../src/themes/basic/theme.scss */
+/* line 334, ../../../../src/themes/basic/theme.scss */
 .brush .extent {
-  fill: rgba(144, 195, 191, 0.5);
+  fill: rgba(144, 195, 191, 0.1);
+  stroke: #90c3bf;
+  stroke-width: 0px;
+  shape-rendering: crispEdges;
+}
+/* line 341, ../../../../src/themes/basic/theme.scss */
+.brush .resize rect.handle {
+  visibility: visible !important;
+  fill: rgba(105, 105, 105, 0.5);
+}
+/* line 346, ../../../../src/themes/basic/theme.scss */
+.brush .mask {
+  fill: rgba(255, 255, 255, 0.8);
+  stroke: transparent;
+  stroke-width: 0px;
+  shape-rendering: crispEdges;
 }
 
-/* line 249, ../../../../src/themes/basic/theme.scss */
+/* line 354, ../../../../src/themes/basic/theme.scss */
 .decoration {
   cursor: pointer;
   stroke-width: 1;
@@ -439,4 +652,13 @@ html, body {
   stroke: rgba(255, 255, 255, 0.5);
   -webkit-filter: drop-shadow(-5px -5px 5px #000);
   filter: drop-shadow(-5px -5px 5px #000);
+}
+
+/* line 366, ../../../../src/themes/basic/theme.scss */
+.konami-background {
+  background: url(icons/konami.gif) no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
 }
