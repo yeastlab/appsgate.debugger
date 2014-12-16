@@ -28,10 +28,21 @@ Debugger.Dashboard = function (selector, options) {
     // Keep track of dashboard state
     this._state = {};
 
+    // Keep track of dashboard mode.
+    // note: before a dashboard reset the mode is undefined.
+    this._mode = Debugger.DASHBOARD_MODE.UNKNOWN;
+
     if (_.isFunction(this.initialize)) {
         this.initialize(selector, options);
     }
 };
+
+// Define dashboard MODE
+Debugger.DASHBOARD_MODE = Object.freeze({
+    LIVE: 'live',
+    HISTORY: 'history',
+    UNKNOWN: undefined
+});
 
 // Attach all inheritable methods to the Dashboard prototype.
 _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
@@ -95,7 +106,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                 // If a global eventline is sent then we must reset the dashboard.
                 if (packet.eventline) {
                     // Reset the dashboard whenever a new eventline is sent.
-                    this._reset(packet.isHistoryTrace ? 'history' : 'live');
+                    this._reset(packet.isHistoryTrace ? Debugger.DASHBOARD_MODE.HISTORY : Debugger.DASHBOARD_MODE.LIVE);
 
                     // Reload focusline with data from evenline.
                     // note: here we prevent rendering except for the last frame
@@ -240,6 +251,21 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         }
     },
 
+    // Get current mode.
+    mode: function() {
+        return this._mode;
+    },
+
+    // Check is current mode is `live` mode.
+    isLiveMode: function() {
+        return this._mode == Debugger.DASHBOARD_MODE.LIVE;
+    },
+
+    // Check is current mode is `history` mode.
+    isHistoryMode: function() {
+        return this._mode == Debugger.DASHBOARD_MODE.HISTORY;
+    },
+
     // **Private API**
 
     _setState: function(key, value) {
@@ -381,6 +407,9 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
 
         // Reset domain.
         this._domain = [_.now() - this.options.livetrace.delayBeforeFlush, _.now()];
+
+        // Keep track of new mode
+        this._mode = mode;
     },
 
     // Clean dashboard. Cleaning the dashboard will (a) clean and detach all widgets but
@@ -687,7 +716,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             id: 'default',
             orientation: 'bottom',
             timeFormat: this._d3_timeFormatMulti,
-            live: mode == 'live' ? true : false
+            live: mode == Debugger.DASHBOARD_MODE.LIVE ? true : false
         };
 
         // Create focusline.
