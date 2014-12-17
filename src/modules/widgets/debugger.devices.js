@@ -120,3 +120,5 @@ _.extend(
 // @include devices/debugger.keycardswitch.js
 // @include devices/debugger.smartplug.js
 // @include devices/debugger.colorlight.js
+// @include devices/debugger.domicube.js
+// @include devices/debugger.mediaplayer.js

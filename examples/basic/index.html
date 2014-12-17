@@ -146,6 +146,14 @@
                 }
             });
 
+            $('button').on('click', function(){
+                if( $(this).attr('id') == 'live' && !dashboard.isLiveMode()) {
+                    dashboard.requestLiveTrace();
+                } else if ($(this).attr('id') == 'history' && !dashboard.isHistoryMode()) {
+                    dashboard.requestInitialHistoryTrace();
+                }
+            });
+
             // prompt server for initial history trace
             dashboard.requestInitialHistoryTrace();
         });
@@ -157,10 +165,18 @@
             margin-left: auto;
             margin-right: auto;
         }
+
+        #toolbar {
+            text-align: center
+        }
     </style>
 </head>
 <body>
 <div class="wrapper">
+    <div id="toolbar">
+        <button id="live">Live</button>
+        <button id="history">History</button>
+    </div>
     <div id='canvas'></div>
 </div>
 </body>
