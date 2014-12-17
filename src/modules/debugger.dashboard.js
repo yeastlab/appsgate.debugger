@@ -897,6 +897,9 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     case 'ColorLight':
                         widget = new Debugger.Widgets.ColorLight(widget_attributes, widget_options);
                         break;
+                    case 'DomiCube':
+                        widget = new Debugger.Widgets.DomiCube(widget_attributes, widget_options);
+                        break;
                 }
                 break;
         }

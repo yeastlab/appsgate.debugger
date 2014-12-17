@@ -14,6 +14,8 @@
     "colorlight_plural": "Ampoules Philips Hue",
     "illumination": "Capteur de luminosité",
     "illumination_plurial": "Capteurs de luminosité",
+    "domicube": "DomiCube",
+    "domicube_plurial": "DomiCubes",
     "program": "Programme",
     "program_plural": "Programmes",
     "others": "Autre",
