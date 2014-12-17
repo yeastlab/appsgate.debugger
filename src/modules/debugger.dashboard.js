@@ -900,6 +900,9 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
                     case 'DomiCube':
                         widget = new Debugger.Widgets.DomiCube(widget_attributes, widget_options);
                         break;
+                    case 'MediaPlayer':
+                        widget = new Debugger.Widgets.MediaPlayer(widget_attributes, widget_options);
+                        break;
                 }
                 break;
         }
