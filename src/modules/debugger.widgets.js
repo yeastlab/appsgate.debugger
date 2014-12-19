@@ -633,7 +633,7 @@ Widgets.Mixins = {
                         if (d.data.decorations.length > 1) {
                             return "#magnify"
                         } else {
-                            return "#" + d.data.decorations[0].type;
+                            return "#" + d.data.decorations[0].picto;
                         }
                     },
                     'class': "decoration",

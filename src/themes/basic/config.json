@@ -123,16 +123,65 @@
                 "x": "5px",
                 "y": "5px"
             },
+            "border": {
+                "width": "2px"
+            },
             "disabled": {
                 "color": "rgba(105, 105, 105, 0.3)",
                 "focused": {
                     "color": "rgba(105, 105, 105, 0.6)"
                 }
             },
-            "enabled": {
-                "color": "rgba(154, 207, 7, 0.3)",
+            "deployed": {
+                "fill": {
+                    "color": "rgba(204, 204, 204, 0.3)"
+                },
+                "border": {
+                    "color": "rgba(0, 112, 7, 0.3)"
+                },
                 "focused": {
-                    "color": "rgba(154, 207, 7, 0.6)"
+                    "fill": {
+                        "color": "rgba(204, 204, 204, 0.6)"
+                    }
+                }
+            },
+            "processing": {
+                "fill": {
+                    "color": "rgba(154, 207, 7, 0.3)"
+                },
+                "border": {
+                    "color": "rgba(0, 112, 7, 0.3)"
+                },
+                "focused": {
+                    "fill": {
+                        "color": "rgba(154, 207, 7, 0.6)"
+                    }
+                }
+            },
+            "incomplete": {
+                "fill": {
+                    "color": "rgba(204, 204, 204, 0.3)"
+                },
+                "border": {
+                    "color": "rgba(255, 102, 0, 0.3)"
+                },
+                "focused": {
+                    "fill": {
+                        "color": "rgba(204, 204, 204, 0.6)"
+                    }
+                }
+            },
+            "limping": {
+                "fill": {
+                    "color": "rgba(255, 153, 51, 0.3)"
+                },
+                "border": {
+                    "color": "rgba(255, 102, 0, 0.3)"
+                },
+                "focused": {
+                    "fill": {
+                        "color": "rgba(255, 153, 51, 0.6)"
+                    }
                 }
             },
             "invalid": {
