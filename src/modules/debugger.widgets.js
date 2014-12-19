@@ -491,8 +491,8 @@ Widgets.Mixins = {
     // **StateChart mixin.**
     ValueChart: {
         initD3ValueChart: function () {
-            //this.value_chart = this.svg.insert('g', '.markers').attr({class: 'value area'}).selectAll('rect');
-            this.value_chart = this.svg.insert('path', '.markers').attr({class: 'value area'});
+            this.value_chart = this.svg.insert('g', '.markers').attr({class: 'value area'}).selectAll('rect');
+            //this.value_chart = this.svg.insert('path', '.markers').attr({class: 'value area'});
             this.value_chart_border = this.svg.insert('path', '.markers').attr({class: 'value border'});
             this.value_chart_extra = this.svg.insert('line', /* insert before */ '.markers').attr({class: 'value border pending'});
         },
@@ -500,58 +500,44 @@ Widgets.Mixins = {
             var self = this;
 
             /* state_chart */
-            //var chart = this.value_chart = this.value_chart.data(
-            //    this.buffer.select(function (d) {
-            //        return ensure(d, 'data.event.type', 'update');
-            //    }),
-            //    function (d) {
-            //        return d.timestamp
-            //    }
-            //);
-            //
-            //chart.enter().append('rect').attr({
-            //    x: function (d) {
-            //        return self.timescale(self.dateFn(d.timestamp));
-            //    },
-            //    y: function (d) {
-            //        return self.computed('svg.height') - self.valueScale(self.valueFn(d.data));
-            //    },
-            //    width: function (d) {
-            //        return self.timescale(self.dateFn(d.next.timestamp)) - self.timescale(self.dateFn(d.timestamp))
-            //    },
-            //    height: function (d) {
-            //        return self.valueScale(self.valueFn(d.data))
-            //    }
-            //});
-            //chart.attr({
-            //    x: function (d) {
-            //        return self.timescale(self.dateFn(d.timestamp))
-            //    },
-            //    y: function (d) {
-            //        return self.computed('svg.height') - self.valueScale(self.valueFn(d.data))
-            //    },
-            //    width: function (d) {
-            //        return self.timescale(self.dateFn(d.next.timestamp)) - self.timescale(self.dateFn(d.timestamp))
-            //    },
-            //    height: function (d) {
-            //        return self.valueScale(self.valueFn(d.data))
-            //    }
-            //});
-            //chart.exit().remove();
-
-            var area = d3.svg.area()
-                .x(function(d) { return self.timescale(self.dateFn(d.timestamp)) })
-                .y0(function(d) { return self.computed('svg.height'); })
-                .y1(function(d) { return self.computed('svg.height') - self.valueScale(self.valueFn(d.data)); })
-                .interpolate("cardinal");
-            this.value_chart.datum(
+            var chart = this.value_chart = this.value_chart.data(
                 this.buffer.select(function (d) {
                     return ensure(d, 'data.event.type', 'update');
                 }),
                 function (d) {
                     return d.timestamp
                 }
-            ).attr('d', area);
+            );
+
+            chart.enter().append('rect').attr({
+                x: function (d) {
+                    return self.timescale(self.dateFn(d.timestamp));
+                },
+                y: function (d) {
+                    return self.computed('svg.height') - self.valueScale(self.valueFn(d.data));
+                },
+                width: function (d) {
+                    return self.timescale(self.dateFn(d.next.timestamp)) - self.timescale(self.dateFn(d.timestamp))
+                },
+                height: function (d) {
+                    return self.valueScale(self.valueFn(d.data))
+                }
+            });
+            chart.attr({
+                x: function (d) {
+                    return self.timescale(self.dateFn(d.timestamp))
+                },
+                y: function (d) {
+                    return self.computed('svg.height') - self.valueScale(self.valueFn(d.data))
+                },
+                width: function (d) {
+                    return self.timescale(self.dateFn(d.next.timestamp)) - self.timescale(self.dateFn(d.timestamp))
+                },
+                height: function (d) {
+                    return self.valueScale(self.valueFn(d.data))
+                }
+            });
+            chart.exit().remove();
 
             /* border */
             var line = d3.svg.line()
@@ -565,8 +551,7 @@ Widgets.Mixins = {
                         return self.computed('svg.height') + self.options.theme.device.state.border.width;
                     }
                 })
-                //.interpolate("step-after");
-                .interpolate("cardinal");
+                .interpolate("step-after");
             this.value_chart_border.datum(
                 this.buffer.all(),
                 function (d) {
@@ -599,18 +584,18 @@ Widgets.Mixins = {
         },
 
         updateD3ValueChartFocus: function(focused, unfocused) {
-            //var chart = this.value_chart.data(
-            //    _.compact([focused, unfocused]),
-            //    function (d) {
-            //        return d.timestamp
-            //    }
-            //);
-            //
-            //chart.attr({
-            //    class: function(d) {
-            //        return d == focused ? 'focused' : ''
-            //    }
-            //});
+            var chart = this.value_chart.data(
+                _.compact([focused, unfocused]),
+                function (d) {
+                    return d.timestamp
+                }
+            );
+
+            chart.attr({
+                class: function(d) {
+                    return d == focused ? 'focused' : ''
+                }
+            });
         },
 
         destroyD3ValueChart: function () {
