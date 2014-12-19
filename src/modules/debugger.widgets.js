@@ -630,7 +630,13 @@ Widgets.Mixins = {
                 .append("use")
                 .attr({
                     'xlink:href': function (d) {
-                        if (d.data.decorations.length > 1) {
+                        if (d.data.decorations.length > 1 /* if more than on decorations AND */ && (
+                                // some decoration are `state` related
+                            _.some(d.data.decorations, {'type': 'state'})
+                            || // or
+                                // some decoration are `access` related
+                            _.some(d.data.decorations, {'type': 'access'}))
+                        ) {
                             return "#magnify"
                         } else {
                             return "#" + d.data.decorations[0].picto;
