@@ -522,22 +522,76 @@ html, body {
   text-align: center;
 }
 
-/* line 180, ../../../../src/themes/basic/theme.scss */
+/* line 182, ../../../../src/themes/basic/theme.scss */
+.tabular.decorations tr {
+  height: 80px;
+}
+/* line 184, ../../../../src/themes/basic/theme.scss */
+.tabular.decorations tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+/* line 187, ../../../../src/themes/basic/theme.scss */
+.tabular.decorations tr:nth-child(even) {
+  background-color: #fafafa;
+}
+/* line 191, ../../../../src/themes/basic/theme.scss */
+.tabular.decorations td {
+  padding-bottom: 1em;
+}
+/* line 194, ../../../../src/themes/basic/theme.scss */
+.tabular.decorations .decoration-head {
+  width: 80px;
+}
+/* line 196, ../../../../src/themes/basic/theme.scss */
+.tabular.decorations .decoration-head .picto {
+  width: 50px;
+  margin-left: 15px;
+  height: 50px;
+  line-height: 50px;
+  background-size: 50px 50px;
+}
+/* line 203, ../../../../src/themes/basic/theme.scss */
+.tabular.decorations .decoration-head .datetime {
+  width: 80px;
+  height: 30px;
+  text-align: center;
+}
+/* line 207, ../../../../src/themes/basic/theme.scss */
+.tabular.decorations .decoration-head .datetime .date, .tabular.decorations .decoration-head .datetime .time {
+  line-height: 10px;
+  font-size: x-small;
+}
+/* line 214, ../../../../src/themes/basic/theme.scss */
+.tabular.decorations .decoration-body .description {
+  height: 50px;
+}
+/* line 217, ../../../../src/themes/basic/theme.scss */
+.tabular.decorations .decoration-body .extra {
+  height: 30px;
+  text-align: right;
+}
+/* line 220, ../../../../src/themes/basic/theme.scss */
+.tabular.decorations .decoration-body .extra .source, .tabular.decorations .decoration-body .extra .causality {
+  line-height: 10px;
+  font-size: x-small;
+}
+
+/* line 234, ../../../../src/themes/basic/theme.scss */
 .axis path,
 .axis line,
 .grid line {
   fill: none;
   stroke-width: 1px;
   stroke: rgba(0, 0, 0, 0.1);
-  shape-rendering: crispEdges;
+  shape-rendering: auto;
 }
 
-/* line 189, ../../../../src/themes/basic/theme.scss */
+/* line 243, ../../../../src/themes/basic/theme.scss */
 .grid path {
   display: none;
 }
 
-/* line 193, ../../../../src/themes/basic/theme.scss */
+/* line 247, ../../../../src/themes/basic/theme.scss */
 .axis.top {
   background-image: linear-gradient(to bottom, #ffffff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -o-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
@@ -547,7 +601,7 @@ html, body {
   top: 16px;
 }
 
-/* line 202, ../../../../src/themes/basic/theme.scss */
+/* line 256, ../../../../src/themes/basic/theme.scss */
 .axis.bottom {
   background-image: linear-gradient(to top, #ffffff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -o-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
@@ -557,166 +611,198 @@ html, body {
   bottom: 0px;
 }
 
-/* line 211, ../../../../src/themes/basic/theme.scss */
+/* line 265, ../../../../src/themes/basic/theme.scss */
 .axis text {
   fill: #4c4c4c;
   font-family: sans-serif;
   font-size: 11px;
 }
 
-/* line 217, ../../../../src/themes/basic/theme.scss */
+/* line 271, ../../../../src/themes/basic/theme.scss */
 .state.area {
   fill: rgba(154, 207, 7, 0.2);
   stroke-width: 0;
 }
-/* line 221, ../../../../src/themes/basic/theme.scss */
+/* line 275, ../../../../src/themes/basic/theme.scss */
 .state.area .focused {
   fill: rgba(154, 207, 7, 0.5);
 }
 
-/* line 226, ../../../../src/themes/basic/theme.scss */
+/* line 280, ../../../../src/themes/basic/theme.scss */
 .state.border {
   stroke: rgba(154, 207, 7, 0.8);
   stroke-width: 2px;
-  shape-rendering: crispEdges;
+  shape-rendering: auto;
   fill: transparent;
 }
 
-/* line 233, ../../../../src/themes/basic/theme.scss */
+/* line 287, ../../../../src/themes/basic/theme.scss */
 .state.border.pending {
   stroke-linecap: 'square';
   stroke-dasharray: 1, 2;
 }
 
-/* line 238, ../../../../src/themes/basic/theme.scss */
+/* line 292, ../../../../src/themes/basic/theme.scss */
 .value.area {
   fill: rgba(41, 81, 109, 0.2);
   stroke-width: 0;
 }
-/* line 242, ../../../../src/themes/basic/theme.scss */
+/* line 296, ../../../../src/themes/basic/theme.scss */
 .value.area .focused {
   fill: rgba(41, 81, 109, 0.5);
 }
 
-/* line 247, ../../../../src/themes/basic/theme.scss */
+/* line 301, ../../../../src/themes/basic/theme.scss */
 .value.border {
   stroke: rgba(41, 81, 109, 0.8);
   stroke-width: 2px;
   fill: transparent;
 }
 
-/* line 253, ../../../../src/themes/basic/theme.scss */
+/* line 307, ../../../../src/themes/basic/theme.scss */
 .value.border.pending {
-  stroke-linecap: 'square';
+  stroke-linecap: 'round';
   stroke-dasharray: 1, 2;
 }
 
-/* line 259, ../../../../src/themes/basic/theme.scss */
+/* line 312, ../../../../src/themes/basic/theme.scss */
+.program {
+  stroke-width: 2px;
+}
+/* line 314, ../../../../src/themes/basic/theme.scss */
 .program .disabled {
   fill: rgba(105, 105, 105, 0.3);
 }
-/* line 262, ../../../../src/themes/basic/theme.scss */
+/* line 317, ../../../../src/themes/basic/theme.scss */
 .program .disabled.focused {
   fill: rgba(105, 105, 105, 0.6);
 }
-/* line 265, ../../../../src/themes/basic/theme.scss */
-.program .enabled {
-  fill: rgba(154, 207, 7, 0.3);
+/* line 320, ../../../../src/themes/basic/theme.scss */
+.program .deployed {
+  fill: rgba(204, 204, 204, 0.3);
+  stroke: rgba(0, 112, 7, 0.3);
 }
-/* line 268, ../../../../src/themes/basic/theme.scss */
-.program .enabled.focused {
+/* line 324, ../../../../src/themes/basic/theme.scss */
+.program .deployed.focused {
+  fill: rgba(204, 204, 204, 0.6);
+}
+/* line 327, ../../../../src/themes/basic/theme.scss */
+.program .processing {
+  fill: rgba(154, 207, 7, 0.3);
+  stroke: rgba(0, 112, 7, 0.3);
+}
+/* line 331, ../../../../src/themes/basic/theme.scss */
+.program .processing.focused {
   fill: rgba(154, 207, 7, 0.6);
 }
-/* line 271, ../../../../src/themes/basic/theme.scss */
+/* line 334, ../../../../src/themes/basic/theme.scss */
+.program .incomplete {
+  fill: rgba(204, 204, 204, 0.3);
+  stroke: rgba(255, 102, 0, 0.3);
+}
+/* line 338, ../../../../src/themes/basic/theme.scss */
+.program .incomplete.focused {
+  fill: rgba(204, 204, 204, 0.6);
+}
+/* line 341, ../../../../src/themes/basic/theme.scss */
+.program .limping {
+  fill: rgba(255, 153, 51, 0.3);
+  stroke: rgba(255, 102, 0, 0.3);
+}
+/* line 345, ../../../../src/themes/basic/theme.scss */
+.program .limping.focused {
+  fill: rgba(255, 153, 51, 0.6);
+}
+/* line 348, ../../../../src/themes/basic/theme.scss */
 .program .invalid {
   fill: rgba(207, 60, 0, 0.3);
 }
-/* line 274, ../../../../src/themes/basic/theme.scss */
+/* line 351, ../../../../src/themes/basic/theme.scss */
 .program .invalid.focused {
   fill: rgba(207, 60, 0, 0.6);
 }
 
-/* line 280, ../../../../src/themes/basic/theme.scss */
+/* line 357, ../../../../src/themes/basic/theme.scss */
 .status line {
   stroke-width: 2px;
   stroke-linecap: round;
   stroke-dasharray: 1, 5;
 }
-/* line 286, ../../../../src/themes/basic/theme.scss */
+/* line 363, ../../../../src/themes/basic/theme.scss */
 .status .connection {
   stroke: rgba(154, 207, 7, 0.8);
 }
-/* line 289, ../../../../src/themes/basic/theme.scss */
+/* line 366, ../../../../src/themes/basic/theme.scss */
 .status .connection.focused {
   stroke: #9acf07;
 }
-/* line 292, ../../../../src/themes/basic/theme.scss */
+/* line 369, ../../../../src/themes/basic/theme.scss */
 .status .problem {
   stroke: rgba(206, 96, 39, 0.8);
 }
-/* line 295, ../../../../src/themes/basic/theme.scss */
+/* line 372, ../../../../src/themes/basic/theme.scss */
 .status .problem.focused {
   stroke: #ce6027;
 }
-/* line 298, ../../../../src/themes/basic/theme.scss */
+/* line 375, ../../../../src/themes/basic/theme.scss */
 .status .disconnection {
   stroke: rgba(206, 66, 66, 0.8);
 }
-/* line 301, ../../../../src/themes/basic/theme.scss */
+/* line 378, ../../../../src/themes/basic/theme.scss */
 .status .disconnection.focused {
   stroke: #ce4242;
 }
 
-/* line 306, ../../../../src/themes/basic/theme.scss */
+/* line 383, ../../../../src/themes/basic/theme.scss */
 .focusline .area,
 .focusline rect {
   fill: rgba(105, 105, 105, 0.3);
   stroke-width: 0;
 }
 
-/* line 312, ../../../../src/themes/basic/theme.scss */
+/* line 389, ../../../../src/themes/basic/theme.scss */
 .focusline .border {
   fill: none;
   stroke: rgba(105, 0, 105, 0.5);
 }
 
-/* line 317, ../../../../src/themes/basic/theme.scss */
+/* line 394, ../../../../src/themes/basic/theme.scss */
 .ruler-shadow {
   fill: rgba(255, 0, 0, 0.3);
 }
 
-/* line 322, ../../../../src/themes/basic/theme.scss */
+/* line 399, ../../../../src/themes/basic/theme.scss */
 .spikes line {
   stroke-width: 2px;
   stroke: rgba(154, 207, 7, 0.8);
 }
-/* line 327, ../../../../src/themes/basic/theme.scss */
+/* line 404, ../../../../src/themes/basic/theme.scss */
 .spikes .focused {
   stroke-width: 4px;
   stroke: #9acf07;
 }
 
-/* line 334, ../../../../src/themes/basic/theme.scss */
+/* line 411, ../../../../src/themes/basic/theme.scss */
 .brush .extent {
   fill: rgba(144, 195, 191, 0.1);
   stroke: #90c3bf;
   stroke-width: 0px;
-  shape-rendering: crispEdges;
+  shape-rendering: auto;
 }
-/* line 341, ../../../../src/themes/basic/theme.scss */
+/* line 418, ../../../../src/themes/basic/theme.scss */
 .brush .resize rect.handle {
   visibility: visible !important;
   fill: rgba(105, 105, 105, 0.5);
 }
-/* line 346, ../../../../src/themes/basic/theme.scss */
+/* line 423, ../../../../src/themes/basic/theme.scss */
 .brush .mask {
   fill: rgba(255, 255, 255, 0.8);
   stroke: transparent;
   stroke-width: 0px;
-  shape-rendering: crispEdges;
+  shape-rendering: auto;
 }
 
-/* line 354, ../../../../src/themes/basic/theme.scss */
+/* line 431, ../../../../src/themes/basic/theme.scss */
 .decoration {
   cursor: pointer;
   stroke-width: 1;
@@ -726,7 +812,7 @@ html, body {
   filter: drop-shadow(-5px -5px 5px #000);
 }
 
-/* line 366, ../../../../src/themes/basic/theme.scss */
+/* line 443, ../../../../src/themes/basic/theme.scss */
 .konami-background {
   background: url(icons/konami.gif) no-repeat center center fixed;
   -webkit-background-size: cover;
