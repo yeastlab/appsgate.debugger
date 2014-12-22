@@ -174,6 +174,60 @@ html, body {
 }
 
 //
+// Tabular
+//
+
+.tabular {
+    &.decorations {
+        tr {
+            height: 80px;
+            &:nth-child(odd) {
+                background-color: $element_odd_fill_color;
+            }
+            &:nth-child(even) {
+                background-color: $element_even_fill_color;
+            }
+        }
+        td {
+            padding-bottom: 1em;
+        }
+        .decoration-head {
+            width: 80px;
+            .picto {
+                width: 50px;
+                margin-left: 15px;
+                height: 50px;
+                line-height: 50px;
+                background-size: 50px 50px;
+            }
+            .datetime {
+                width: 80px;
+                height: 30px;
+                text-align: center;
+                .date, .time {
+                    line-height: 10px;
+                    font-size: x-small;
+                }
+            }
+        }
+        .decoration-body {
+            .description {
+                height: 50px;
+            }
+            .extra {
+                height: 30px;
+                text-align: right;
+                .source, .causality {
+                    line-height: 10px;
+                    font-size: x-small;
+                }
+            }
+        }
+    }
+}
+
+
+//
 // D3 definition
 //
 
@@ -183,7 +237,7 @@ html, body {
     fill: none;
     stroke-width: $axis_stroke_width;
     stroke: $axis_stroke_color;
-    shape-rendering: crispEdges;
+    shape-rendering: auto;
 }
 
 .grid path {
@@ -226,7 +280,7 @@ html, body {
 .state.border {
     stroke: $device_state_border_color;
     stroke-width: $device_state_border_width;
-    shape-rendering: crispEdges;
+    shape-rendering: auto;
     fill: transparent;
 }
 
@@ -251,22 +305,45 @@ html, body {
 }
 
 .value.border.pending {
-    stroke-linecap: 'square';
+    stroke-linecap: 'round';
     stroke-dasharray: 1, 2;
 }
 
 .program {
+    stroke-width: $program_state_border_width;
     .disabled {
         fill: $program_state_disabled_color;
     }
     .disabled.focused {
         fill: $program_state_disabled_focused_color;
     }
-    .enabled {
-        fill: $program_state_enabled_color;
+    .deployed {
+        fill: $program_state_deployed_fill_color;
+        stroke: $program_state_deployed_border_color;
     }
-    .enabled.focused {
-        fill: $program_state_enabled_focused_color;
+    .deployed.focused {
+        fill: $program_state_deployed_focused_fill_color;
+    }
+    .processing {
+        fill: $program_state_processing_fill_color;
+        stroke: $program_state_processing_border_color;
+    }
+    .processing.focused {
+        fill: $program_state_processing_focused_fill_color;
+    }
+    .incomplete {
+        fill: $program_state_incomplete_fill_color;
+        stroke: $program_state_incomplete_border_color;
+    }
+    .incomplete.focused {
+        fill: $program_state_incomplete_focused_fill_color;
+    }
+    .limping {
+        fill: $program_state_limping_fill_color;
+        stroke: $program_state_limping_border_color;
+    }
+    .limping.focused {
+        fill: $program_state_limping_focused_fill_color;
     }
     .invalid {
         fill: $program_state_invalid_color;
@@ -335,7 +412,7 @@ html, body {
         fill: $focusline_selector_fill_color;
         stroke: $focusline_selector_border_color;
         stroke-width: $focusline_selector_border_width;
-        shape-rendering: crispEdges;
+        shape-rendering: auto;
     }
 
     .resize rect.handle {
@@ -347,7 +424,7 @@ html, body {
         fill: $focusline_selector_mask_fill_color;
         stroke: $focusline_selector_mask_border_color;
         stroke-width: $focusline_selector_mask_border_width;
-        shape-rendering: crispEdges;
+        shape-rendering: auto;
     }
 }
 

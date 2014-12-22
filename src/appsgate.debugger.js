@@ -20,7 +20,7 @@
     var previousDebugger = root.AppsGateDebugger;
 
     // Current version of the library. Keep in sync with package.json.
-    Debugger.VERSION = '<%= version %>';
+    Debugger.VERSION = '{%= version %}';
 
     // Runs AppsGate.Debugger.js in noConflict mode, returning the AppsGateDebugger variable to its previous owner.
     // Returns a reference to this AppsGateDebugger object.
@@ -37,6 +37,12 @@
 
     // Inline include of theme config files
     // @include ../.tmp/gen/themes/basic/theme.config.js
+
+    // Inline include of templates files.
+    // @include ../.tmp/gen/templates/decorations.html.tpl.js
+
+    // Inline include of templates files.
+    // @include ../.tmp/gen/templates/decorations.txt.tpl.js
 
     Debugger.themes = {
         basic: THEMES_BASIC

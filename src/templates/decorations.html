@@ -1,0 +1,20 @@
+<table class="tabular decorations">
+<% _.forEach(decorations, function(decoration) { %>
+    <tr>
+        <td class="decoration-head">
+            <div class="picto picto-<%- decoration.picto %>"></div>
+            <div class="datetime">
+                <span class="date"><%- timeFormat('%x')(new Date(decoration.time))%></span>
+                <span class="time"><%- timeFormat('%X')(new Date(decoration.time))%></span>
+            </div>
+        </td>
+        <td class="decoration-body">
+            <div class="description"><%- i18n.t(decoration.description, decoration.context, { ns: options.i18n.ns }) %></div>
+            <div class="extra">
+                <span class="source"><%- decoration.source %></span> |
+                <span class="causality"><%- decoration.causality %></span>
+            </div>
+        </td>
+    </tr>
+<% }); %>
+</table>

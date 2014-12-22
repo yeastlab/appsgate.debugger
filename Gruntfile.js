@@ -14,6 +14,9 @@ module.exports = function (grunt) {
     // Time how long tasks take.
     require('time-grunt')(grunt);
 
+    // Setup template
+    grunt.template.addDelimiters('debugger-delimiters', '{%', '%}');
+
     // Project configuration
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -58,9 +61,23 @@ module.exports = function (grunt) {
 
         variablize: {
             debugger: {
-                src: '<%= svgmerge.debugger.dest %>',
-                dest: '.tmp/gen/themes/basic/base.svg.js',
-                variable: 'BASE_SVG'
+                files: [
+                    {
+                        src: '<%= svgmerge.debugger.dest %>',
+                        dest: '.tmp/gen/themes/basic/base.svg.js',
+                        variable: 'BASE_SVG'
+                    },
+                    {
+                        src: 'src/templates/decorations.html',
+                        dest: '.tmp/gen/templates/decorations.html.tpl.js',
+                        variable: 'DECORATIONS_TO_HTML_TPL'
+                    },
+                    {
+                        src: 'src/templates/decorations.txt',
+                        dest: '.tmp/gen/templates/decorations.txt.tpl.js',
+                        variable: 'DECORATIONS_TO_TXT_TPL'
+                    }
+                ]
             }
         },
 
@@ -174,7 +191,8 @@ module.exports = function (grunt) {
             options: {
                 data: {
                     version: '<%= pkg.version %>'
-                }
+                },
+                'delimiters': 'debugger-delimiters'
             },
             debugger: {
                 src: '<%= preprocess.debugger.dest %>',
@@ -263,7 +281,7 @@ module.exports = function (grunt) {
                 files: ['Gruntfile.js']
             },
             debugger : {
-                files : ['Gruntfile.js', 'src/*.js', 'src/**/*.js'],
+                files : ['Gruntfile.js', 'src/*.js', 'src/**/*.js', 'src/templates/*'],
                 tasks : ['build']
             },
             compass: {

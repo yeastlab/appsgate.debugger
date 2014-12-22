@@ -54,6 +54,10 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
             i18n: {
                 ns: 'debugger'
             },
+            template: {
+                'decorations_to_html': DECORATIONS_TO_HTML_TPL,
+                'decorations_to_txt': DECORATIONS_TO_TXT_TPL
+            },
             livetrace: {
                 delayBeforeFlush: 100000
             },
@@ -457,15 +461,28 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     // Widget marker click callback.
     // `decorations` is an array of decorations associated to the marker.
     _onWidgetMarkerClick: function(decorations) {
-        var textContent = '';
-        var htmlContent = '';
+        var self = this;
+
+        // Default options for template processor
+        var tpl_options = {
+            'imports': {
+                'i18n': i18n,
+                'timeFormat': d3.time.format,
+                'options': self.options
+            }
+        };
 
         // Build basic string representation of `decorations` array
         // both as plain text and HTML.
-        _.each(_.sortBy(decorations, function(decoration) { return parseInt(decoration.order) }), function(decoration) {
-            textContent += decoration.description + '\n';
-            htmlContent += decoration.description + '</br>';
-        });
+        var htmlContent = _.template(this.options.template.decorations_to_html,
+            { 'decorations': _.sortBy(decorations, function(decoration) { return parseInt(decoration.order) }) },
+            tpl_options
+        );
+
+        var textContent = _.template(this.options.template.decorations_to_txt,
+            { 'decorations': _.sortBy(decorations, function(decoration) { return parseInt(decoration.order) }) },
+            tpl_options
+        );
 
         // Trigger `marker:click` event with following arguments:
         // - decorations: Arrays - list of decorations associated to the marker

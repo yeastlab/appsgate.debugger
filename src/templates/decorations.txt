@@ -1,0 +1,3 @@
+<% _.forEach(decorations, function(decoration) { %>
+<%- timeFormat('%x')(new Date(decoration.time))%> <%- timeFormat('%X')(new Date(decoration.time)) %> | <%- i18n.t(decoration.description, decoration.context, { ns: options.i18n.ns }) %> <<%- decoration.source %>, <%- decoration.causality %>>
+<% }); %>
