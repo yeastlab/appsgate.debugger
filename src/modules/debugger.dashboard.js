@@ -565,7 +565,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
     // Update all widgets attached to the dashboard according to some `frame` data.
     _update_all_with_frame: function (frame, options) {
         // Update focus
-        this._focus = this._focusline.brush.empty()? this._domain : this._focusline.brush.extent();
+        this._focus = this.isLiveMode() || this._focusline.brush.empty()? this._domain : this._focusline.brush.extent();
 
         //
         // Update *Devices*.
@@ -739,7 +739,7 @@ _.extend(Debugger.Dashboard.prototype, Backbone.Events, {
         // Create focusline.
         this._focusline = new Debugger.Widgets.Focusline(focusline_attributes, focusline_options);
 
-        // Bind dashboard to its events.
+        // Bind dashboard to its events (events are only triggered when in history mode)
         this.listenTo(this._focusline, 'focus:change', this._onFocusChange);
         this.listenTo(this._focusline, 'brush:resize', this._onBrushResize);
 
