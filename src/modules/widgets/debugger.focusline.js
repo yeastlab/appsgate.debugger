@@ -55,99 +55,101 @@ Widgets.Focusline = Widgets.Widget.extend({
             })
             .call(this.xAxis);
 
-        // Define context for displaying focused area.
-        this.context = this.svg.append("g").attr("class", "context");
+        if (!this.attributes.live) {
+            // Define context for displaying focused area.
+            this.context = this.svg.append("g").attr("class", "context");
 
-        // Define a brush for focus selection.
-        this.brush = d3.svg.brush().x(this.timescale)
-            .on('brush', function () {
-                var extent = self.brush.extent(),
-                    diff = self.timescale(extent[1]) - self.timescale(extent[0]),
-                    min = self.options.theme.focusline.selector.min_width,
-                    max = self.options.theme.focusline.selector.max_width,
-                    resize = false;
+            // Define a brush for focus selection.
+            this.brush = d3.svg.brush().x(this.timescale)
+                .on('brush', function () {
+                    var extent = self.brush.extent(),
+                        diff = self.timescale(extent[1]) - self.timescale(extent[0]),
+                        min = self.options.theme.focusline.selector.min_width,
+                        max = self.options.theme.focusline.selector.max_width,
+                        resize = false;
 
-                // Check if brush extent is not too big or too small
-                if (min && (diff < min)) {
-                    resize = true;
-                    if (self.timescale(extent[0]) + min > self.computed('svg.width')) {
-                        extent[1] = self.timescale.invert(self.computed('svg.width'));
-                        extent[0] = self.timescale.invert(self.computed('svg.width') - min)
-                    } else {
-                        extent[1] = self.timescale.invert(self.timescale(extent[0]) + min);
+                    // Check if brush extent is not too big or too small
+                    if (min && (diff < min)) {
+                        resize = true;
+                        if (self.timescale(extent[0]) + min > self.computed('svg.width')) {
+                            extent[1] = self.timescale.invert(self.computed('svg.width'));
+                            extent[0] = self.timescale.invert(self.computed('svg.width') - min)
+                        } else {
+                            extent[1] = self.timescale.invert(self.timescale(extent[0]) + min);
+                        }
+                    } else if (max && (diff > max)) {
+                        resize = true;
+                        extent[1] = self.timescale.invert(self.timescale(extent[0]) + max);
                     }
-                } else if (max && (diff > max)) {
-                    resize = true;
-                    extent[1] = self.timescale.invert(self.timescale(extent[0]) + max);
-                }
 
-                // Resize the extent if required
-                if (resize) {
-                    self.brush.extent(extent)(d3.select(this));
-                }
+                    // Resize the extent if required
+                    if (resize) {
+                        self.brush.extent(extent)(d3.select(this));
+                    }
 
-                // Update brush resize handles
-                self.context.select('.mask.left').attr({
-                    'x': 0,
-                    'width': self.timescale(extent[0])
+                    // Update brush resize handles
+                    self.context.select('.mask.left').attr({
+                        'x': 0,
+                        'width': self.timescale(extent[0])
+                    });
+                    self.context.select('.mask.right').attr({
+                        'x': self.timescale(extent[1]) + self.options.theme.focusline.selector.handle.width,
+                        'width': self.computed('svg.width') - self.timescale(extent[1])
+                    });
+
+                    // Notify that brush selection just changed
+                    self.triggerMethod.apply(self, ['focus:change'].concat([self.brush]));
+                })
+                .on('brushend', function () {
+                    var extent = self.brush.empty() ? self.brush.x().domain() : self.brush.extent();
+                    var width = parseInt(self.timescale(extent[1]) - self.timescale(extent[0]));
+                    self.triggerMethod.apply(self, ['brush:resize'].concat([width]));
                 });
-                self.context.select('.mask.right').attr({
-                    'x': self.timescale(extent[1]) + self.options.theme.focusline.selector.handle.width,
-                    'width': self.computed('svg.width') - self.timescale(extent[1])
+
+            // Attach brush to context
+            var brushGroup = this.brushGroup = this.context.append("g")
+                .attr("class", "x brush")
+                .call(this.brush);
+            brushGroup.selectAll("rect")
+                .attr("y", this.options.theme.focusline.selector.border.width / 2)
+                .attr("height", this.computed('svg.height') - this.computed('axis.height') - this.options.theme.focusline.selector.border.width);
+
+            // Keep reference to brush extent node
+            this.brushExtent = this.brushGroup.select('rect.extent');
+
+            // Add brush selector mask
+            this.context.selectAll('.brush').append('rect').attr('class', 'mask left');
+            this.context.selectAll('.brush').append('rect').attr('class', 'mask right');
+            this.context.selectAll('.brush rect.mask').attr({
+                'y': this.options.theme.focusline.selector.mask.border.width / 2,
+                'height': this.computed('svg.height') - this.computed('axis.height') - this.options.theme.focusline.selector.mask.border.width
+            });
+
+            // Add brush selector handles
+            this.context.selectAll('.resize').append('rect').attr({
+                'class': 'handle',
+                'width': self.options.theme.focusline.selector.handle.width,
+                'height': this.computed('svg.height') - this.computed('axis.height')
+            });
+
+            // Prevent clearing the brush
+            var oldBrushMouseDownHandler = brushGroup.on('mousedown.brush');
+            brushGroup.on('mousedown.brush', function () {
+                brushGroup.on('mouseup.brush', function () {
+                    clearHandlers();
                 });
 
-                // Notify that brush selection just changed
-                self.triggerMethod.apply(self, ['focus:change'].concat([self.brush]));
-            })
-            .on('brushend', function () {
-                var extent = self.brush.empty() ? self.brush.x().domain() : self.brush.extent();
-                var width = parseInt(self.timescale(extent[1]) - self.timescale(extent[0]));
-                self.triggerMethod.apply(self, ['brush:resize'].concat([width]));
+                brushGroup.on('mousemove.brush', function () {
+                    clearHandlers();
+                    oldBrushMouseDownHandler.call(this);
+                });
+
+                function clearHandlers() {
+                    brushGroup.on('mousemove.brush', null);
+                    brushGroup.on('mouseup.brush', null);
+                }
             });
-
-        // Attach brush to context
-        var brushGroup = this.brushGroup = this.context.append("g")
-            .attr("class", "x brush")
-            .call(this.brush);
-        brushGroup.selectAll("rect")
-            .attr("y", this.options.theme.focusline.selector.border.width/2)
-            .attr("height", this.computed('svg.height') - this.computed('axis.height') - this.options.theme.focusline.selector.border.width);
-
-        // Keep reference to brush extent node
-        this.brushExtent = this.brushGroup.select('rect.extent');
-
-        // Add brush selector mask
-        this.context.selectAll('.brush').append('rect').attr('class', 'mask left');
-        this.context.selectAll('.brush').append('rect').attr('class', 'mask right');
-        this.context.selectAll('.brush rect.mask').attr({
-            'y': this.options.theme.focusline.selector.mask.border.width/2,
-            'height': this.computed('svg.height') - this.computed('axis.height') - this.options.theme.focusline.selector.mask.border.width
-        });
-
-        // Add brush selector handles
-        this.context.selectAll('.resize').append('rect').attr({
-            'class': 'handle',
-            'width': self.options.theme.focusline.selector.handle.width,
-            'height': this.computed('svg.height') - this.computed('axis.height')
-        });
-
-        // Prevent clearing the brush
-        var oldBrushMouseDownHandler = brushGroup.on('mousedown.brush');
-        brushGroup.on('mousedown.brush', function () {
-            brushGroup.on('mouseup.brush', function () {
-                clearHandlers();
-            });
-
-            brushGroup.on('mousemove.brush', function () {
-                clearHandlers();
-                oldBrushMouseDownHandler.call(this);
-            });
-
-            function clearHandlers() {
-                brushGroup.on('mousemove.brush', null);
-                brushGroup.on('mouseup.brush', null);
-            }
-        });
+        }
 
         // Hide placeholders
         this._$sidebar.hide();
@@ -160,10 +162,14 @@ Widgets.Focusline = Widgets.Widget.extend({
         delete this.y;
         delete this.xAxis;
         this.chart.remove(); delete this.chart;
-        this.context.remove(); delete this.context;
-        this.brushGroup.remove(); delete this.brushGroup;
-        delete this.brushExtent;
         this.xAxisGroup.remove(); delete this.xAxisGroup;
+
+        // remove brush stuff when in live mode
+        if (!this.attributes.live) {
+            this.context.remove(); delete this.context;
+            this.brushGroup.remove(); delete this.brushGroup;
+            delete this.brushExtent;
+        }
     },
 
     onBeforeRender: function(data, focus, options) {
@@ -220,8 +226,8 @@ Widgets.Focusline = Widgets.Widget.extend({
     },
 
     rulerFocusChanged: function (coordinate, direction, options) {
-        var brushExtentOffset = parseInt(this.brushExtent.attr('x'));
-        var brushExtentWidth = this.brush.empty()? this.computed('svg.width') : parseInt(this.brushExtent.attr('width'));
+        var brushExtentOffset = this.attributes.live ? 0 : parseInt(this.brushExtent.attr('x'));
+        var brushExtentWidth = this.attributes.live || this.brush.empty()? this.computed('svg.width') : parseInt(this.brushExtent.attr('width'));
         var focusedTextLabelWidth = parseInt(this.focusedTime.node().getBBox().width);
 
         // Workout ruler shadow placement and focused time
